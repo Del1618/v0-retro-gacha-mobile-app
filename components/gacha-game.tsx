@@ -9,13 +9,11 @@ import { generateRows, type LottoRow } from "@/lib/lottery"
 type Phase = "idle" | "striking" | "results"
 type Frame = "idle" | "raise" | "strike"
 
-// All three poses live in one sprite sheet (3 equal columns) so the art
-// style, palette and proportions are physically identical across frames.
-// We swap frames by shifting the background position rather than the src.
-const FRAME_POS: Record<Frame, string> = {
-  idle: "0% 50%",
-  raise: "50% 50%",
-  strike: "100% 50%",
+// Each pose is its own image, swapped in sequence to play the mining motion.
+const FRAME_SRC: Record<Frame, string> = {
+  idle: "/dwarf-miner.png",
+  raise: "/dwarf-raise.png",
+  strike: "/dwarf-strike.png",
 }
 
 // Background ambient ore specks scattered on the cave walls.
@@ -153,20 +151,13 @@ export function GachaGame() {
             )}
 
             <span className={`block ${phase === "idle" ? "animate-breathe" : ""}`}>
-              <span
-                role="img"
-                aria-label="Pixel dwarf miner swinging a pickaxe"
-                className="pixelated block h-[150px] w-[128px] overflow-hidden drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
-              >
-                <span
-                  className="pixelated block h-full w-full bg-no-repeat"
-                  style={{
-                    backgroundImage: "url(/dwarf-sheet.png)",
-                    backgroundSize: "330% 118%",
-                    backgroundPosition: FRAME_POS[frame],
-                  }}
-                />
-              </span>
+              <img
+                src={FRAME_SRC[frame] || "/placeholder.svg"}
+                alt="Pixel dwarf miner swinging a pickaxe"
+                width={150}
+                height={150}
+                className="pixelated h-[150px] w-[150px] object-contain object-bottom drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
+              />
             </span>
           </button>
         </div>
