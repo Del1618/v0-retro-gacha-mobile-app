@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useCallback, useRef } from "react"
-import Image from "next/image"
 import { SparkBurst } from "@/components/spark-burst"
 import { LootRow } from "@/components/loot-row"
 import { OreRock } from "@/components/ore-rock"
@@ -10,10 +9,13 @@ import { generateRows, type LottoRow } from "@/lib/lottery"
 type Phase = "idle" | "striking" | "results"
 type Frame = "idle" | "raise" | "strike"
 
-const FRAME_SRC: Record<Frame, string> = {
-  idle: "/dwarf-miner.png",
-  raise: "/dwarf-raise.png",
-  strike: "/dwarf-strike.png",
+// All three poses live in one sprite sheet (3 equal columns) so the art
+// style, palette and proportions are physically identical across frames.
+// We swap frames by shifting the background position rather than the src.
+const FRAME_POS: Record<Frame, string> = {
+  idle: "0% 50%",
+  raise: "50% 50%",
+  strike: "100% 50%",
 }
 
 // Background ambient ore specks scattered on the cave walls.
@@ -151,14 +153,20 @@ export function GachaGame() {
             )}
 
             <span className={`block ${phase === "idle" ? "animate-breathe" : ""}`}>
-              <Image
-                src={FRAME_SRC[frame]}
-                alt="Pixel dwarf miner swinging a pickaxe"
-                width={148}
-                height={148}
-                priority
-                className="pixelated h-[148px] w-[148px] object-contain object-bottom drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
-              />
+              <span
+                role="img"
+                aria-label="Pixel dwarf miner swinging a pickaxe"
+                className="pixelated block h-[150px] w-[128px] overflow-hidden drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
+              >
+                <span
+                  className="pixelated block h-full w-full bg-no-repeat"
+                  style={{
+                    backgroundImage: "url(/dwarf-sheet.png)",
+                    backgroundSize: "330% 118%",
+                    backgroundPosition: FRAME_POS[frame],
+                  }}
+                />
+              </span>
             </span>
           </button>
         </div>
