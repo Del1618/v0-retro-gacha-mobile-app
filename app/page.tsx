@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react"
 
 // ==========================================
-// 1. [초기 UI 복원] 300회 카오스 위상 수학 엔진 및 테마 데이터
+// 1. 300회 카오스 위상 수학 엔진 및 국면별 테마 프로필
 // ==========================================
 type MineTheme = "GOLD_VEIN" | "IRON_MINE" | "CRYSTAL_CAVE" | "LAVA_ERUPTION"
 
@@ -29,7 +29,7 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     label: "노다지 황금 광맥 주간",
     caveBg: "#0f1f15",
     caveDeep: "#090f0b",
-    accent: "#2ecc71", // 녹색 네온
+    accent: "#2ecc71", // 청정 녹색 네온
     accentDeep: "#0f3d21",
     accentText: "#2ecc71",
     oreLight: "#a2f4c4",
@@ -44,7 +44,7 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     label: "일반 무쇠 철광산 주간",
     caveBg: "#1f1d0f",
     caveDeep: "#14130d",
-    accent: "#f1c40f", // 황색 네온
+    accent: "#f1c40f", // 평온한 황색 네온
     accentDeep: "#4d3e05",
     accentText: "#f1c40f",
     oreLight: "#f9e79f",
@@ -59,7 +59,7 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     label: "심해 크리스탈 동굴 주간",
     caveBg: "#0f171f",
     caveDeep: "#091014",
-    accent: "#3498db", // 청색 네온
+    accent: "#3498db", // 디펜스 청색 네온
     accentDeep: "#0f2d42",
     accentText: "#3498db",
     oreLight: "#aed6f1",
@@ -74,7 +74,7 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     label: "마그마 용암 폭발 주간",
     caveBg: "#1f0f0f",
     caveDeep: "#140909",
-    accent: "#e74c3c", // 적색 네온
+    accent: "#e74c3c", // 위기방어 적색 네온
     accentDeep: "#42120f",
     accentText: "#e74c3c",
     oreLight: "#f5b7b1",
@@ -95,7 +95,7 @@ function getThemeByRound(round: number): MineTheme {
 }
 
 // ==========================================
-// 2. [중복 배제] 고유 타임스탬프 결합 분산 난수 엔진
+// 2. 유저 고유 타임스탬프 중복 배제 분산 난수 엔진
 // ==========================================
 interface LootRowData {
   id: string
@@ -140,7 +140,7 @@ function generateUniqueLottoRows(round: number, count: number): LootRowData[] {
 }
 
 // ==========================================
-// 3. [오락실 사운드] 브라우저 내장형 웹 오디오 API 신디사이저
+// 3. 브라우저 내장형 웹 오디오 API 이펙트 사운드 신디사이저
 // ==========================================
 class BuiltInRetroAudio {
   private ctx: AudioContext | null = null
@@ -206,7 +206,7 @@ class BuiltInRetroAudio {
 }
 
 // ==========================================
-// 4. 결과 리스트 출력용 도트 공 및 행 UI 컴포넌트
+// 4. 결과 출력용 픽셀 공 및 행 UI 내부 컴포넌트
 // ==========================================
 function EmbeddedPixelBall({ value, variant, config }: { value: number; variant: "main" | "bonus"; config: ThemeConfig }) {
   const pad = String(value).padStart(2, "0")
@@ -236,10 +236,10 @@ function EmbeddedPixelBall({ value, variant, config }: { value: number; variant:
 function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: number; config: ThemeConfig }) {
   return (
     <li
-      className="flex items-center gap-2 rounded border-2 px-2.5 py-1.5 transition-all duration-300"
+      className="flex items-center gap-2 rounded border-2 px-2.5 py-1.5 bg-[#11121d]"
       style={{
         borderColor: config.accent,
-        background: `${config.caveDeep}dd`,
+        background: `${config.caveDeep}ee`,
       }}
     >
       <span className="w-4 shrink-0 text-center font-mono font-bold text-[9px]" style={{ color: config.accent }}>
@@ -261,7 +261,7 @@ function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: numb
 }
 
 // ==========================================
-// 5. 메인 게임기 무대 컴포넌트 (초기 UI 복원 완성판)
+// 5. 메인 게임기 무대 컴포넌트 (UI 복원판)
 // ==========================================
 const STRIKES = 3
 const STRIKE_MS = 120 * 3
@@ -316,7 +316,7 @@ export default function Page() {
       timers.current.push(window.setTimeout(fn, ms))
     }
 
-    // 3타 연속 수직 타격 정석 프레임 시퀀서 구동
+    // 3타 연속 타격 정석 프레임 시퀀서 구동
     for (let i = 0; i < STRIKES; i++) {
       const base = 60 + i * STRIKE_MS
       const last = i === STRIKES - 1
@@ -356,4 +356,191 @@ export default function Page() {
     setCrackLevel(0)
     setBroken(false)
     setAnim("idle")
-    setPhase("idle
+    setPhase("idle")
+  }, [clearTimers])
+
+  const dwarfImageSrc = {
+    idle: "/dwarf_idle.png",
+    up: "/dwarf_up.png",
+    down: "/dwarf_down.png",
+    strike: "/dwarf_strike.png",
+  }[phase === "idle" ? "idle" : anim]
+
+  return (
+    <main className="min-h-[100dvh] w-full bg-[#1e202c] flex items-center justify-center overflow-hidden font-mono select-none">
+      {/* 스마트폰 비율 격리형 모바일 컨테이너 */}
+      <div className="relative h-[100dvh] w-full max-w-[440px] overflow-hidden bg-[#0c0d14] flex items-center justify-center p-4">
+        
+        {/* 중앙 집중식 메인 가챠 머신 팝업 */}
+        <div
+          className={`relative border-4 flex w-full max-w-[360px] flex-col overflow-hidden rounded-md transition-all duration-150 ${
+            anim === "impact" ? "translate-y-1 scale-98" : "scale-100"
+          }`}
+          style={{
+            background: theme.caveBg,
+            borderColor: theme.accent,
+            boxShadow: `0 0 24px 4px ${theme.accent}33`,
+            imageRendering: "pixelated"
+          }}
+        >
+          {/* ---- 상단 정보 통제 컨트롤러 바 ---- */}
+          <div
+            className="flex items-center justify-between border-b-4 px-3 py-2 text-[10px] text-white"
+            style={{ background: theme.caveDeep, borderColor: theme.accent }}
+          >
+            <div className="flex items-center gap-2">
+              <span style={{ color: theme.accent }}>⛏️</span>
+              <span className="font-bold">제 {round} 회차</span>
+              {phase === "idle" && (
+                <div className="flex gap-1 ml-1 scale-90">
+                  <button
+                    onClick={() => setRound((r) => Math.max(1, r - 1))}
+                    className="bg-[#212435] px-1.5 py-0.5 rounded text-gray-400 active:bg-gray-600 font-bold"
+                  >
+                    -
+                  </button>
+                  <button
+                    onClick={() => setRound((r) => r + 1)}
+                    className="bg-[#212435] px-1.5 py-0.5 rounded text-gray-400 active:bg-gray-600 font-bold"
+                  >
+                    +
+                  </button>
+                </div>
+              )}
+            </div>
+            <span className="text-[9px] font-bold tracking-wider" style={{ color: theme.accent }}>
+              {theme.label}
+            </span>
+          </div>
+
+          {/* ---- 순수 도트 게임 연출 메인 무대 (흉측한 가이드 박스 전면 철폐) ---- */}
+          <div className="relative h-[230px] w-full overflow-hidden" style={{ background: theme.caveBg }}>
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_25%,rgba(0,0,0,0.75)_100%)]" />
+
+            {/* 환경 광석 파티클 야광 잔상 */}
+            {SPECK_POS.map((o, i) => (
+              <span
+                key={i}
+                className="absolute h-2.5 w-2.5 rounded-sm opacity-70"
+                style={{
+                  top: o.top,
+                  left: o.left,
+                  backgroundColor: theme.speck,
+                  boxShadow: `0 0 10px 2px ${theme.speck}`,
+                }}
+              />
+            ))}
+
+            {/* 바닥 바위 타일 그리드 트랙 */}
+            <div className="absolute bottom-0 left-0 right-0 flex h-7 border-t border-black/40">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex-1 border-r"
+                  style={{ backgroundColor: i % 2 ? theme.ground : theme.groundAlt, borderColor: "rgba(0,0,0,0.15)" }}
+                />
+              ))}
+            </div>
+
+            {/* [광석 배치 개체]: 투명 배경 일체형 배치 */}
+            <div className="absolute bottom-[14px] left-[32%] z-10 -translate-x-1/2">
+              <div
+                className={`w-[75px] h-[75px] flex flex-col items-center justify-center border-2 border-dashed rounded text-[9px] font-bold text-center p-1 transition-all ${
+                  anim === "impact" ? "scale-90 brightness-120" : "scale-100"
+                }`}
+                style={{
+                  backgroundColor: crackLevel === 3 ? "transparent" : `${theme.accent}12`,
+                  borderColor: theme.accent,
+                  color: theme.accent,
+                }}
+              >
+                {crackLevel === 0 && <span>💎<br/>[원석 온전]</span>}
+                {crackLevel === 1 && <span>💥<br/>[1차 균열]</span>}
+                {crackLevel === 2 && <span>⚡<br/>[임계 파쇄]</span>}
+                {crackLevel === 3 && <span className="text-white animate-bounce">✨HAUL!</span>}
+              </div>
+            </div>
+
+            {/* 타격 순간 섬광 불꽃 이펙트 */}
+            {sparkKey > 0 && isStriking && (
+              <div 
+                className="absolute w-8 h-8 rounded-full bg-white opacity-70 animate-ping pointer-events-none"
+                style={{ top: "58%", left: "32%", boxShadow: `0 0 24px 8px ${theme.accent}` }}
+              />
+            )}
+
+            {/* ---- 정방향 좌측 고정식 도트 광부 캐릭터 슬롯 (완벽 투명화) ---- */}
+            <button
+              type="button"
+              onClick={handleStrike}
+              disabled={phase !== "idle"}
+              className="absolute bottom-2 left-[66%] z-10 -translate-x-1/2 cursor-pointer rounded outline-none disabled:cursor-default"
+            >
+              {/* [ TOUCH ! ] 플로팅 네온 텍스트 레이블 */}
+              {phase === "idle" && (
+                <span className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-bold text-[9px] text-white px-2 py-0.5 rounded bg-black/80 border border-white/10 shadow-md">
+                  <span className="animate-pulse" style={{ color: theme.accent }}>[ TAP CHARACTER ]</span>
+                </span>
+              )}
+
+              {/* 프레임 드라이버 웹 인터페이스 고정 스퀘어 */}
+              <div className="relative w-[120px] h-[150px] flex flex-col items-center justify-center">
+                <img
+                  src={dwarfImageSrc}
+                  alt="Miner"
+                  className="w-full h-full object-contain object-bottom pixelated drop-shadow-[0_4px_0_rgba(0,0,0,0.6)]"
+                  onError={(e) => {
+                    // 에셋 준비 단계용 실시간 폴백 렌더 대시보드
+                    (e.target as HTMLElement).style.display = "none"
+                  }}
+                />
+                {/* 텍스트 가이드는 마우스 호버 시에만 투명하게 나타나도록 비주얼 고도화 */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center rounded opacity-0 hover:opacity-100 bg-black/40 transition-opacity font-mono text-[9px]">
+                  <span className="text-white font-bold">[2D SPRITE]</span>
+                  <span style={{ color: theme.accent }} className="font-bold text-[10px]">
+                    {phase === "idle" ? "IDLE" : anim.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          {/* ---- 300주기 수학 엔진 인포 내러티브 배너 ---- */}
+          <div className="bg-[#0c0d16] p-2.5 text-center border-t border-b border-black/40">
+            <p className="text-[10px] text-gray-400 font-sans leading-relaxed tracking-tight">
+              {isResults ? "🎉 채굴 원석 자산 정제 프로세스 완수!" : theme.description}
+            </p>
+            <div className="mt-1 text-[7px] text-gray-600 font-mono tracking-widest">
+              PHASE REGION POOL SIZE: {theme.poolSize.toLocaleString()} COMBINATIONS
+            </div>
+          </div>
+
+          {/* ---- 10줄 정예 조합 폭포수 결과 보드창 ---- */}
+          {isResults && (
+            <div className="flex flex-col bg-[#05060a] border-t-4" style={{ borderColor: theme.accent }}>
+              <div className="flex items-center justify-between px-3 py-1.5 font-mono text-[8px] text-gray-500">
+                <span>MINED MATRIX HAUL (10 ROWS)</span>
+                <span style={{ color: theme.accent }}>6+BONUS SORTED</span>
+              </div>
+
+              <ul className="flex max-h-[160px] flex-col gap-1 overflow-y-auto px-2 pb-2">
+                {rows.map((row, i) => (
+                  <EmbeddedLootRow key={row.id} row={row} index={i} config={theme} />
+                ))}
+              </ul>
+
+              <button
+                type="button"
+                onClick={handleReset}
+                className="m-2 cursor-pointer rounded font-bold text-[10px] py-2.5 shadow-lg active:translate-y-0.5 text-black border border-white/10"
+                style={{ backgroundColor: theme.accent }}
+              >
+                🔄 RESET & RE-MINE IN THIS PHASE
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  )
+}
