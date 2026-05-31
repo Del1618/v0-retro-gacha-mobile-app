@@ -264,6 +264,20 @@
   animation: mine-swing 0.36s ease-in-out 3;
 }
 
+/* ---- Standalone pickaxe arc (pivots at dwarf's hands, head smashes the ore) ---- */
+@keyframes pick-swing {
+  0%   { transform: rotate(-40deg); }   /* raised back over the shoulder */
+  18%  { transform: rotate(-52deg); }   /* wind up overhead */
+  46%  { transform: rotate(64deg); }    /* slam down toward the ore */
+  58%  { transform: rotate(74deg); }    /* impact — head bites the ore */
+  72%  { transform: rotate(60deg); }    /* recoil bounce */
+  100% { transform: rotate(-40deg); }   /* lift back up for next swing */
+}
+.animate-pick {
+  transform-origin: 50% 92%;
+  animation: pick-swing 0.36s ease-in-out 3;
+}
+
 /* ---- Ore squash + shake on impact ---- */
 @keyframes ore-hit {
   0%   { transform: scale(1) translateY(0); }

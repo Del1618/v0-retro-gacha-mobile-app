@@ -5,6 +5,7 @@ import Image from "next/image"
 import { SparkBurst } from "@/components/spark-burst"
 import { LootRow } from "@/components/loot-row"
 import { OreRock } from "@/components/ore-rock"
+import { Pickaxe } from "@/components/pickaxe"
 import { generateRows, type LottoRow } from "@/lib/lottery"
 
 type Phase = "idle" | "striking" | "results"
@@ -115,6 +116,13 @@ export function GachaGame() {
               <OreRock hits={hits} broken={broken} />
             </div>
           </div>
+
+          {/* ---- Swinging pickaxe (pivots at the dwarf's hands toward the ore) ---- */}
+          {phase === "striking" && (
+            <div className="absolute bottom-[70px] left-[48%] z-20 -translate-x-1/2">
+              <Pickaxe swinging />
+            </div>
+          )}
 
           {/* spark burst lands on the ore (dwarf side) each chop */}
           {sparkKey > 0 && phase === "striking" && (
