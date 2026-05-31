@@ -5,10 +5,16 @@ import Image from "next/image"
 import { SparkBurst } from "@/components/spark-burst"
 import { LootRow } from "@/components/loot-row"
 import { OreRock } from "@/components/ore-rock"
-import { Pickaxe } from "@/components/pickaxe"
 import { generateRows, type LottoRow } from "@/lib/lottery"
 
 type Phase = "idle" | "striking" | "results"
+type Frame = "idle" | "raise" | "strike"
+
+const FRAME_SRC: Record<Frame, string> = {
+  idle: "/dwarf-miner.png",
+  raise: "/dwarf-raise.png",
+  strike: "/dwarf-strike.png",
+}
 
 // Background ambient ore specks scattered on the cave walls.
 const SPECKS = [
@@ -20,11 +26,12 @@ const SPECKS = [
   { top: "8%", left: "52%", color: "#38b764" },
 ]
 
-// Impact timings (ms) lined up with the 3 pickaxe swings (0.36s each).
-const IMPACTS = [200, 560, 920]
+const SWINGS = 3
+const SWING_MS = 380 // time per raise->strike cycle
 
 export function GachaGame() {
   const [phase, setPhase] = useState<Phase>("idle")
+  const [frame, setFrame] = useState<Frame>("idle")
   const [rows, setRows] = useState<LottoRow[]>([])
   const [hits, setHits] = useState(0)
   const [broken, setBroken] = useState(false)
@@ -37,27 +44,33 @@ export function GachaGame() {
 
     setPhase("striking")
 
-    // Three pickaxe swings: each impact shakes the ore, sparks, and adds a crack.
-    IMPACTS.forEach((t, idx) => {
+    // Each swing: wind up (raise frame) then slam (strike frame + impact fx).
+    for (let i = 0; i < SWINGS; i++) {
+      const base = 80 + i * SWING_MS
+      const impact = base + 200
+      window.setTimeout(() => setFrame("raise"), base)
       window.setTimeout(() => {
-        setHits(idx + 1)
+        setFrame("strike")
+        setHits(i + 1)
         setSparkKey((k) => k + 1)
-        if (idx === IMPACTS.length - 1) setBroken(true)
-      }, t)
-    })
+        if (i === SWINGS - 1) setBroken(true)
+      }, impact)
+    }
 
     // Reveal loot after the ore shatters.
     window.setTimeout(() => {
       setRows(generateRows(10))
       setPhase("results")
+      setFrame("idle")
       lockRef.current = false
-    }, 1350)
+    }, 80 + SWINGS * SWING_MS + 320)
   }, [])
 
   const handleReset = useCallback(() => {
     setRows([])
     setHits(0)
     setBroken(false)
+    setFrame("idle")
     setPhase("idle")
   }, [])
 
@@ -110,52 +123,43 @@ export function GachaGame() {
             ))}
           </div>
 
-          {/* ---- The target green ore ---- */}
-          <div className="absolute bottom-[20px] left-[66%] z-10 -translate-x-1/2">
+          {/* ---- The target amethyst ore ---- */}
+          <div className="absolute bottom-[18px] left-[64%] z-10 -translate-x-1/2">
             <div key={sparkKey} className={sparkKey > 0 && !broken ? "animate-ore-hit" : ""}>
               <OreRock hits={hits} broken={broken} />
             </div>
           </div>
 
-          {/* ---- Swinging pickaxe (pivots at the dwarf's hands toward the ore) ---- */}
-          {phase === "striking" && (
-            <div className="absolute bottom-[70px] left-[48%] z-20 -translate-x-1/2">
-              <Pickaxe swinging />
-            </div>
-          )}
-
-          {/* spark burst lands on the ore (dwarf side) each chop */}
+          {/* impact burst lands where the pickaxe head meets the ore */}
           {sparkKey > 0 && phase === "striking" && (
-            <SparkBurst key={sparkKey} top="58%" left="60%" />
+            <SparkBurst key={sparkKey} top="64%" left="55%" />
           )}
 
-          {/* ---- The dwarf ---- */}
+          {/* ---- The dwarf (frame-based mining animation) ---- */}
           <button
             type="button"
             onClick={handleStrike}
             disabled={phase !== "idle"}
             aria-label="Strike the rock to mine your numbers"
-            className="absolute bottom-6 left-[34%] z-10 -translate-x-1/2 cursor-pointer rounded-sm outline-none focus-visible:ring-4 focus-visible:ring-retro-cyan disabled:cursor-default"
+            className="absolute bottom-4 left-[39%] z-10 -translate-x-1/2 cursor-pointer rounded-sm outline-none focus-visible:ring-4 focus-visible:ring-retro-cyan disabled:cursor-default"
           >
             {/* floating tooltip */}
             {phase === "idle" && (
-              <span className="animate-float-tip absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap font-pixel text-[9px] text-retro-red [text-shadow:0_0_8px_rgba(255,51,85,0.9)]">
+              <span className="animate-float-tip absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-pixel text-[9px] text-retro-red [text-shadow:0_0_8px_rgba(255,51,85,0.9)]">
                 <span className="animate-neon-blink">[ TOUCH ! ]</span>
               </span>
             )}
 
-            <span
-              className={`block origin-bottom ${phase === "idle" ? "animate-breathe" : ""} ${
-                phase === "striking" ? "animate-mine" : ""
-              }`}
-            >
+            <span className={`block ${phase === "idle" ? "animate-breathe" : ""}`}>
               <Image
-                src="/dwarf-miner.png"
-                alt="Pixel dwarf miner holding a pickaxe"
-                width={132}
-                height={132}
+                src={FRAME_SRC[frame]}
+                alt="Pixel dwarf miner swinging a pickaxe"
+                width={148}
+                height={148}
                 priority
-                className="pixelated h-[132px] w-[132px] scale-x-[-1] drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
+                className={`pixelated h-[148px] w-[148px] object-contain object-bottom drop-shadow-[0_6px_0_rgba(0,0,0,0.5)] ${
+                  frame === "idle" ? "scale-x-[-1]" : ""
+                }`}
               />
             </span>
           </button>
