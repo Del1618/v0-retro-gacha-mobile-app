@@ -15,10 +15,11 @@ const PARTICLES = Array.from({ length: 14 }, (_, i) => {
   }
 })
 
-export function SparkBurst() {
+export function SparkBurst({ top = "50%", left = "50%" }: { top?: string; left?: string }) {
   return (
     <div
-      className="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2"
+      className="pointer-events-none absolute z-30 -translate-x-1/2 -translate-y-1/2"
+      style={{ top, left }}
       aria-hidden="true"
     >
       {/* central flash */}

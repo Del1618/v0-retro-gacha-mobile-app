@@ -4,44 +4,59 @@ import { useState, useCallback, useRef } from "react"
 import Image from "next/image"
 import { SparkBurst } from "@/components/spark-burst"
 import { LootRow } from "@/components/loot-row"
+import { OreRock } from "@/components/ore-rock"
 import { generateRows, type LottoRow } from "@/lib/lottery"
 
 type Phase = "idle" | "striking" | "results"
 
-const ORES = [
+// Background ambient ore specks scattered on the cave walls.
+const SPECKS = [
   { top: "10%", left: "14%", color: "#ffcd75" },
   { top: "18%", left: "82%", color: "#ffcd75" },
   { top: "44%", left: "8%", color: "#38b764" },
-  { top: "30%", left: "70%", color: "#38b764" },
-  { top: "58%", left: "88%", color: "#ffcd75" },
+  { top: "30%", left: "78%", color: "#38b764" },
+  { top: "58%", left: "90%", color: "#ffcd75" },
   { top: "8%", left: "52%", color: "#38b764" },
-  { top: "62%", left: "20%", color: "#ffcd75" },
 ]
+
+// Impact timings (ms) lined up with the 3 pickaxe swings (0.36s each).
+const IMPACTS = [200, 560, 920]
 
 export function GachaGame() {
   const [phase, setPhase] = useState<Phase>("idle")
   const [rows, setRows] = useState<LottoRow[]>([])
-  const [showSpark, setShowSpark] = useState(false)
+  const [hits, setHits] = useState(0)
+  const [broken, setBroken] = useState(false)
+  const [sparkKey, setSparkKey] = useState(0)
   const lockRef = useRef(false)
 
   const handleStrike = useCallback(() => {
     if (lockRef.current) return
     lockRef.current = true
 
-    setShowSpark(true)
     setPhase("striking")
 
-    // Reveal loot right after the 1s shake completes.
+    // Three pickaxe swings: each impact shakes the ore, sparks, and adds a crack.
+    IMPACTS.forEach((t, idx) => {
+      window.setTimeout(() => {
+        setHits(idx + 1)
+        setSparkKey((k) => k + 1)
+        if (idx === IMPACTS.length - 1) setBroken(true)
+      }, t)
+    })
+
+    // Reveal loot after the ore shatters.
     window.setTimeout(() => {
       setRows(generateRows(10))
-      setShowSpark(false)
       setPhase("results")
       lockRef.current = false
-    }, 1000)
+    }, 1350)
   }, [])
 
   const handleReset = useCallback(() => {
     setRows([])
+    setHits(0)
+    setBroken(false)
     setPhase("idle")
   }, [])
 
@@ -67,8 +82,8 @@ export function GachaGame() {
           {/* subtle cave vignette */}
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_30%,rgba(0,0,0,0.55)_100%)]" />
 
-          {/* glowing ore deposits + crystals */}
-          {ORES.map((o, i) => (
+          {/* ambient ore specks on the cave walls */}
+          {SPECKS.map((o, i) => (
             <span
               key={i}
               className="animate-ore-pulse absolute h-2.5 w-2.5 rounded-[1px]"
@@ -94,7 +109,17 @@ export function GachaGame() {
             ))}
           </div>
 
-          {showSpark && <SparkBurst />}
+          {/* ---- The target green ore ---- */}
+          <div className="absolute bottom-[26px] left-[64%] z-10 -translate-x-1/2">
+            <div key={sparkKey} className={sparkKey > 0 && !broken ? "animate-ore-hit" : ""}>
+              <OreRock hits={hits} broken={broken} />
+            </div>
+          </div>
+
+          {/* spark burst lands on the ore each swing */}
+          {sparkKey > 0 && phase === "striking" && (
+            <SparkBurst key={sparkKey} top="74%" left="64%" />
+          )}
 
           {/* ---- The dwarf ---- */}
           <button
@@ -102,7 +127,7 @@ export function GachaGame() {
             onClick={handleStrike}
             disabled={phase !== "idle"}
             aria-label="Strike the rock to mine your numbers"
-            className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 cursor-pointer rounded-sm outline-none focus-visible:ring-4 focus-visible:ring-retro-cyan disabled:cursor-default"
+            className="absolute bottom-6 left-[34%] z-10 -translate-x-1/2 cursor-pointer rounded-sm outline-none focus-visible:ring-4 focus-visible:ring-retro-cyan disabled:cursor-default"
           >
             {/* floating tooltip */}
             {phase === "idle" && (
@@ -112,8 +137,8 @@ export function GachaGame() {
             )}
 
             <span
-              className={`block ${phase === "idle" ? "animate-breathe" : ""} ${
-                phase === "striking" ? "animate-strike" : ""
+              className={`block origin-bottom ${phase === "idle" ? "animate-breathe" : ""} ${
+                phase === "striking" ? "animate-mine" : ""
               }`}
             >
               <Image

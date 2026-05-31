@@ -250,6 +250,45 @@
   animation: ore-pulse 2.2s ease-in-out infinite;
 }
 
+/* ---- Dwarf pickaxe swing (lunges toward ore, repeats) ---- */
+@keyframes mine-swing {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(7px, -4px) rotate(5deg); }   /* wind up & back */
+  52%  { transform: translate(16px, 5px) rotate(11deg); }  /* strike down */
+  64%  { transform: translate(13px, 4px) rotate(9deg); }   /* impact recoil */
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+.animate-mine {
+  animation: mine-swing 0.36s ease-in-out 3;
+}
+
+/* ---- Ore squash + shake on impact ---- */
+@keyframes ore-hit {
+  0%   { transform: scale(1) translateY(0); }
+  22%  { transform: scale(1.16, 0.8) translateY(3px); }
+  50%  { transform: scale(0.9, 1.1) translateY(-3px) rotate(-2deg); }
+  74%  { transform: scale(1.04, 0.97) translateY(1px) rotate(1deg); }
+  100% { transform: scale(1) translateY(0); }
+}
+.animate-ore-hit {
+  animation: ore-hit 0.28s ease-out both;
+}
+
+/* ---- Ore shatters apart on final hit ---- */
+@keyframes ore-shatter {
+  0%   { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(var(--rot)); opacity: 0; }
+}
+.animate-shatter {
+  animation: ore-shatter 0.6s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-mine {
+    animation: mine-swing 0.36s ease-in-out 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-breathe,
   .animate-float-tip,
