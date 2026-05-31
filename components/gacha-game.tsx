@@ -5,7 +5,8 @@ import { SparkBurst } from "@/components/spark-burst"
 import { LootRow } from "@/components/loot-row"
 import { OreRock } from "@/components/ore-rock"
 import { generateRows, type LottoRow } from "@/lib/lottery"
-import { randomTheme, type Theme } from "@/lib/themes"
+import { randomTheme, THEMES, type Theme } from "@/lib/themes"
+import { primeAudio, playClang, playShatter } from "@/lib/sfx"
 
 /* ----------------------------------------------------------------------------
  * Clean, state-driven Mining Gacha.
@@ -22,19 +23,22 @@ import { randomTheme, type Theme } from "@/lib/themes"
 type Phase = "idle" | "striking" | "results"
 type AnimState = "idle" | "windup" | "impact" | "recovery"
 
-// Pickaxe rotation per frame, expressed in the dwarf's MIRRORED sprite space
-// (the sprite is flipped with scaleX(-1) so he faces LEFT toward the ore).
-// negative = lift the blade up & back, positive = drive it down into the ore.
-const ROT: Record<AnimState, number> = { idle: 0, windup: -30, impact: 28, recovery: 10 }
-// screen-space lunge toward the ore on each frame (negative = step into it).
-const DX: Record<AnimState, number> = { idle: 0, windup: 9, impact: -13, recovery: -4 }
+// Discrete sprite frames (already drawn facing LEFT) — pure frame swapping,
+// no CSS rotation, the dwarf's structural position stays locked.
+const FRAME_SRC: Record<AnimState, string> = {
+  idle: "/dwarf_idle.png",
+  windup: "/dwarf_up.png",
+  impact: "/dwarf_down.png",
+  recovery: "/dwarf_strike.png",
+}
 
 const STRIKES = 3
-const STRIKE_MS = 480 // full windup->impact->recovery cycle
+const FRAME_MS = 120 // fast sequential frame switching
 const T_WINDUP = 0
-const T_IMPACT = 190
-const T_RECOVERY = 340
-const T_RESET = 440
+const T_IMPACT = FRAME_MS // 120
+const T_RECOVERY = FRAME_MS * 2 // 240
+const STRIKE_MS = FRAME_MS * 3 // 360 — full windup->impact->recovery cycle
+const T_RESET = FRAME_MS * 3
 
 // Ambient ore specks scattered on the cave walls (colored per theme).
 const SPECK_POS = [
@@ -47,7 +51,8 @@ const SPECK_POS = [
 ]
 
 export function GachaGame() {
-  const [theme, setTheme] = useState<Theme>(() => randomTheme())
+  // Deterministic on the server (avoids hydration mismatch); randomized after mount.
+  const [theme, setTheme] = useState<Theme>(THEMES.GOLD)
   const [phase, setPhase] = useState<Phase>("idle")
   const [anim, setAnim] = useState<AnimState>("idle")
   const [crackLevel, setCrackLevel] = useState(0)
@@ -65,9 +70,15 @@ export function GachaGame() {
 
   useEffect(() => () => clearTimers(), [clearTimers])
 
+  // Pick a random theme on the client after hydration.
+  useEffect(() => {
+    setTheme((prev) => randomTheme(prev.key))
+  }, [])
+
   const handleStrike = useCallback(() => {
     if (lockRef.current) return
     lockRef.current = true
+    primeAudio() // unlock the audio context on this user gesture
     setPhase("striking")
 
     const at = (ms: number, fn: () => void) => {
@@ -76,15 +87,21 @@ export function GachaGame() {
 
     for (let i = 0; i < STRIKES; i++) {
       const base = 60 + i * STRIKE_MS
+      const last = i === STRIKES - 1
       at(base + T_WINDUP, () => setAnim("windup"))
       at(base + T_IMPACT, () => {
         setAnim("impact")
         setCrackLevel(i + 1) // 1: small crack, 2: large crack, 3: shatter
         setSparkKey((k) => k + 1)
-        if (i === STRIKES - 1) setBroken(true)
+        if (last) {
+          setBroken(true)
+          playShatter() // ore breaks -> glassy shatter + shiny loot chime
+        } else {
+          playClang() // steel pickaxe bites the rock
+        }
       })
       at(base + T_RECOVERY, () => setAnim("recovery"))
-      if (i < STRIKES - 1) at(base + T_RESET, () => setAnim("idle"))
+      if (!last) at(base + T_RESET, () => setAnim("idle"))
     }
 
     // Reveal loot only AFTER the 3rd strike has shattered the ore.
@@ -191,27 +208,14 @@ export function GachaGame() {
               </span>
             )}
 
-            {/* wrapper: screen-space lunge + idle breathing */}
-            <span
-              className={`block ${phase === "idle" ? "animate-breathe" : ""}`}
-              style={
-                isStriking
-                  ? { transform: `translateX(${DX[anim]}px)`, transition: "transform 0.1s ease-out" }
-                  : undefined
-              }
-            >
-              {/* sprite: mirror to face the ore + pivot the pickaxe at the hands */}
+            {/* frame-by-frame sprite swap — structural position locked */}
+            <span className={`block ${phase === "idle" ? "animate-breathe" : ""}`}>
               <img
-                src="/dwarf-miner.png"
+                src={FRAME_SRC[phase === "idle" ? "idle" : anim] || "/placeholder.svg"}
                 alt="Pixel dwarf miner swinging a pickaxe"
-                width={150}
-                height={150}
-                className="pixelated h-[150px] w-[150px] object-contain object-bottom drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
-                style={{
-                  transform: `scaleX(-1) rotate(${isStriking ? ROT[anim] : 0}deg)`,
-                  transformOrigin: "50% 62%",
-                  transition: "transform 0.1s ease-out",
-                }}
+                width={120}
+                height={180}
+                className="pixelated h-[180px] w-[120px] object-contain object-bottom drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
               />
             </span>
           </button>

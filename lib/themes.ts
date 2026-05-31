@@ -52,7 +52,7 @@ export const THEMES: Record<ThemeKey, Theme> = {
   },
   IRON: {
     key: "IRON",
-    label: "IRON VEIN",
+    label: "IRON MINE",
     caveBg: "#29241a",
     caveDeep: "#1c180f",
     ground: "#3a3220",
@@ -74,7 +74,7 @@ export const THEMES: Record<ThemeKey, Theme> = {
   },
   CRYSTAL: {
     key: "CRYSTAL",
-    label: "CRYSTAL VEIN",
+    label: "CRYSTAL CAVE",
     caveBg: "#16203a",
     caveDeep: "#0e1626",
     ground: "#243049",
@@ -96,7 +96,7 @@ export const THEMES: Record<ThemeKey, Theme> = {
   },
   LAVA: {
     key: "LAVA",
-    label: "LAVA VEIN",
+    label: "LAVA ERUPTION",
     caveBg: "#2a1618",
     caveDeep: "#1c0f10",
     ground: "#3a2024",
