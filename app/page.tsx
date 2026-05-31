@@ -16,6 +16,8 @@ interface ThemeConfig {
   accent: string
   accentDeep: string
   accentText: string
+  stoneBase: string // 순수 코딩 도트암석 베이스 색상
+  stoneGlow: string // 보석 핵 야광 색상
   description: string
   poolSize: number
 }
@@ -29,6 +31,8 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     accent: "#2ecc71", 
     accentDeep: "#061a0e",
     accentText: "#2ecc71",
+    stoneBase: "#d4af37", // 황금 바위
+    stoneGlow: "#fff3a8",
     description: "순도 100% 황금 광맥 구역. 압축된 정예 조합 영역을 조사합니다.",
     poolSize: 2194578,
   },
@@ -40,6 +44,8 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     accent: "#f1c40f", 
     accentDeep: "#1a1505",
     accentText: "#f1c40f",
+    stoneBase: "#ca6f1e", // 무쇠 철광석
+    stoneGlow: "#f5cba7",
     description: "표준 무쇠 구역입니다. 완만하게 필터링된 전체 레이어를 채굴합니다.",
     poolSize: 5204120,
   },
@@ -51,6 +57,8 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     accent: "#3498db", 
     accentDeep: "#05141f",
     accentText: "#3498db",
+    stoneBase: "#8e44ad", // 신비로운 자수정 원석
+    stoneGlow: "#ebdef0",
     description: "시공간이 요동치는 동굴, 리스크가 헷지된 크리스탈 틈새를 타격합니다.",
     poolSize: 3410560,
   },
@@ -62,6 +70,8 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     accent: "#e74c3c", 
     accentDeep: "#1f0505",
     accentText: "#e74c3c",
+    stoneBase: "#a93226", // 붉은 용암암석
+    stoneGlow: "#fadbd8",
     description: "카오스 대격변 타이밍. 위기 방어 모드로 난수 위험도를 제어합니다.",
     poolSize: 7854010,
   },
@@ -76,7 +86,7 @@ function getThemeByRound(round: number): MineTheme {
 }
 
 // ==========================================
-// 2. 난수 분산 생성 모듈
+// 2. 난수 분산 생성 모듈 (구조 100% 원상복구)
 // ==========================================
 interface LootRowData {
   id: string
@@ -176,7 +186,53 @@ class BuiltInRetroAudio {
 }
 
 // ==========================================
-// 4. 결과 출력용 로우 컴포넌트 장치계
+// 4. [주문 명세]: 외부 파일 없이 100% 순수 CSS 도트로 코딩한 광석 디바이스
+// ==========================================
+function PurePixelCodingOre({ config, crackLevel }: { config: ThemeConfig; crackLevel: number }) {
+  if (crackLevel === 3) {
+    return (
+      <div className="w-20 h-20 flex items-center justify-center animate-ping pointer-events-none">
+        <span className="text-[10px] font-black tracking-widest text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
+          EXTRACTED
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div 
+      className="relative w-20 h-20 flex items-center justify-center select-none"
+      style={{ imageRendering: "pixelated" }}
+    >
+      {/* 8비트 스타일 다층 레이어 입체 픽셀 바위 형상 조형 */}
+      <div 
+        className="absolute w-14 h-14 rotate-45 border-[5px] transition-transform duration-75"
+        style={{ 
+          backgroundColor: config.accentDeep, 
+          borderColor: config.stoneBase,
+          boxShadow: `0 0 20px ${config.stoneBase}77, inset 0 0 12px rgba(0,0,0,0.7)`
+        }}
+      />
+      {/* 광석 중앙 내부의 영롱한 야광 크리스탈 핵 코어 */}
+      <div 
+        className="absolute w-6 h-6 rotate-45 animate-pulse"
+        style={{ backgroundColor: config.stoneGlow }}
+      />
+      
+      {/* 1타 타격 시 보석 표면을 가르는 정밀 크랙 오버레이 선 (글씨 100% 삭제) */}
+      {crackLevel >= 1 && (
+        <div className="absolute w-full h-1 bg-black/90 rotate-12 top-1/2 left-0 pointer-events-none shadow-md rounded" />
+      )}
+      {/* 2타 타격 시 교차하는 크로스 파쇄 선 */}
+      {crackLevel >= 2 && (
+        <div className="absolute w-1 h-full bg-black/90 -rotate-45 top-0 left-1/2 pointer-events-none shadow-md rounded" />
+      )}
+    </div>
+  )
+}
+
+// ==========================================
+// 5. 결과 행 릴 뷰어 컴포넌트 계통 (UI 완전 원상복구)
 // ==========================================
 function EmbeddedPixelBall({ value, variant, config }: { value: number; variant: "main" | "bonus"; config: ThemeConfig }) {
   const pad = String(value).padStart(2, "0")
@@ -188,7 +244,7 @@ function EmbeddedPixelBall({ value, variant, config }: { value: number; variant:
         boxShadow: `0 0 12px ${config.accent}bb`,
       }
     : {
-        borderColor: "rgba(255,255,255,0.15)",
+        borderColor: "rgba(255,255,255,0.12)",
         background: "#1c1e24",
         color: "#ffffff",
       }
@@ -205,7 +261,7 @@ function EmbeddedPixelBall({ value, variant, config }: { value: number; variant:
 
 function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: number; config: ThemeConfig }) {
   return (
-    <li className="flex items-center gap-3 rounded-xl border px-3.5 py-2 bg-[#12141a] border-white/5 shadow-md">
+    <li className="flex items-center gap-3 rounded-xl border px-3.5 py-2 bg-[#12141a] border-white/5 shadow-md w-full">
       <span className="w-5 shrink-0 text-center font-mono font-bold text-[10px] text-white/30">
         {String(index + 1).padStart(2, "0")}
       </span>
@@ -225,7 +281,7 @@ function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: numb
 }
 
 // ==========================================
-// 5. 메인 마스터 프레임 엔지니어링 스테이지
+// 6. 메인 통합 프레임 스테이지
 // ==========================================
 const SPECK_POS = [
   { top: "10%", left: "14%" },
@@ -241,8 +297,6 @@ export default function Page() {
   const [phase, setPhase] = useState<Phase>("idle")
   const [crackLevel, setCrackLevel] = useState(0)
   const [rows, setRows] = useState<LootRowData[]>([])
-  
-  // 모션 반동 제어 하드웨어 드라이버
   const [strikeMotion, setStrikeMotion] = useState<"ready" | "hit" | "return">("ready")
 
   const lockRef = useRef(false)
@@ -272,18 +326,15 @@ export default function Page() {
       timers.current.push(window.setTimeout(fn, ms))
     }
 
-    // [1타 임팩트]
+    // 3타 프레임 시퀀서 구동
     at(0, () => { setStrikeMotion("hit"); setCrackLevel(1); audio?.playClang(); })
     at(120, () => { setStrikeMotion("return"); })
     
-    // [2타 임팩트]
     at(240, () => { setStrikeMotion("hit"); setCrackLevel(2); audio?.playClang(); })
     at(360, () => { setStrikeMotion("return"); })
     
-    // [3타 대격파 임팩트]
     at(480, () => { setStrikeMotion("hit"); setCrackLevel(3); audio?.playShatter(); })
     
-    // [정제 시퀀서 오픈 및 해제]
     at(750, () => {
       const uniqueData = generateUniqueLottoRows(round, 10)
       setRows(uniqueData)
@@ -302,21 +353,19 @@ export default function Page() {
     setPhase("idle")
   }, [clearTimers])
 
-  // 수직 하강 타격을 제어하는 순수 물리 CSS 매핑 테이블
   const minerTransformStyle = {
     ready: "translate(0, 0) scale(1)",
-    hit: "translate(-22px, 16px) scale(1.03)", 
+    hit: "translate(-25px, 15px) scale(1.04)", 
     return: "translate(4px, -4px) scale(0.99)" 
   }[strikeMotion]
 
-  // 타격 시 광석 바위 개체가 순간 움찔하는 반동 스타일
-  const rockTransformStyle = strikeMotion === "hit" ? "scale(0.92) translate(-2px, 2px)" : "scale(1)"
+  const rockTransformStyle = strikeMotion === "hit" ? "scale(0.90) translate(-2px, 2px)" : "scale(1)"
 
   return (
     <main className="min-h-[100dvh] w-full bg-[#090a0f] flex items-center justify-center overflow-hidden font-sans select-none antialiased">
       <div className="relative h-[100dvh] w-full max-w-[430px] overflow-hidden bg-black flex flex-col border-x border-white/5 shadow-[0_0_80px_rgba(0,0,0,0.9)]">
         
-        {/* 상단 레이아웃 대시보드 */}
+        {/* 상단 프리미엄 헤더 */}
         <header className="p-6 flex justify-between items-end bg-gradient-to-b from-[#11131a] to-black border-b border-white/5">
           <div>
             <h1 className="text-white/30 text-[10px] font-black tracking-[0.25em] mb-1">MATRIX ENGINE ONLINE</h1>
@@ -350,7 +399,7 @@ export default function Page() {
           </div>
         </header>
 
-        {/* 중앙 채굴 무대 */}
+        {/* 중앙 채굴 베젤 무대 */}
         <div className="flex-1 flex flex-col justify-center p-6 gap-4">
           <div 
             className="relative w-full aspect-square rounded-[32px] border-[5px] overflow-hidden transition-all duration-500 shadow-2xl flex items-center justify-center"
@@ -362,47 +411,24 @@ export default function Page() {
           >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_45%,transparent_20%,rgba(0,0,0,0.6)_100%)] pointer-events-none" />
 
-            {/* 환경 야광 조명 입자 */}
+            {/* 환경 야광 조명 파티클 */}
             {SPECK_POS.map((o, i) => (
               <span
                 key={i}
-                className="absolute h-2 w-2 rounded-sm opacity-30 animate-pulse"
+                className="absolute h-2 w-2 rounded-sm opacity-40 animate-pulse"
                 style={{ top: o.top, left: o.left, backgroundColor: theme.accent, boxShadow: `0 0 8px ${theme.accent}` }}
               />
             ))}
 
-            {/* [구조적 정렬 단자]: 글씨 가이드 전면 폐기, 깃허브 실물 이미지 파일(`/ore-rock.png`) 100% 상시 다이렉트 배치 */}
-            <div className="absolute left-[28%] top-[50%] -translate-y-1/2 -translate-x-1/2 z-10 w-24 h-24 flex items-center justify-center">
-              {crackLevel < 3 ? (
-                <div 
-                  className="relative w-full h-full transition-transform duration-75"
-                  style={{ transform: rockTransformStyle }}
-                >
-                  <img
-                    src="/ore-rock.png"
-                    alt="Target Ore"
-                    className="w-full h-full object-contain pixelated"
-                    style={{ filter: `drop-shadow(0 0 12px ${theme.accent}aa)` }}
-                  />
-                  {/* 타격 시 실시간으로 보석 위에 선으로 그려지는 격파 크랙 선 레이어 */}
-                  {crackLevel >= 1 && (
-                    <div className="absolute inset-0 bg-black/80 h-1 top-1/2 left-0 rotate-12 pointer-events-none rounded" />
-                  )}
-                  {crackLevel >= 2 && (
-                    <div className="absolute inset-0 bg-black/80 w-1 left-1/2 top-0 -rotate-45 pointer-events-none rounded" />
-                  )}
-                </div>
-              ) : (
-                /* 3타 파쇄 시 보석이 사라지며 터지는 격파 알림 인디케이터 */
-                <div className="animate-ping pointer-events-none text-center">
-                  <span className="text-[11px] font-black tracking-widest text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
-                    EXTRACTED
-                  </span>
-                </div>
-              )}
+            {/* [복원 완료 명세]: 외부 파일을 완전히 배제하고, 순수 코딩으로 조형한 픽셀 광석 상시 고정 배치 */}
+            <div 
+              className="absolute left-[28%] top-[50%] -translate-y-1/2 -translate-x-1/2 z-10 transition-transform duration-75"
+              style={{ transform: rockTransformStyle }}
+            >
+              <PurePixelCodingOre config={theme} crackLevel={crackLevel} />
             </div>
 
-            {/* 섬광 쇼크 패널 */}
+            {/* 타격 순간 터지는 강력한 네온 섬광 */}
             {strikeMotion === "hit" && (
               <div 
                 className="absolute w-16 h-16 rounded-full bg-white opacity-40 animate-ping pointer-events-none"
@@ -410,7 +436,7 @@ export default function Page() {
               />
             )}
 
-            {/* 우측 고정식 광부 개체 */}
+            {/* 정방향 우측 고정식 광부 개체 */}
             <button
               type="button"
               onClick={handleStrike}
@@ -436,7 +462,7 @@ export default function Page() {
             </button>
           </div>
 
-          {/* 하단 서사 배너 */}
+          {/* 안내 배너 */}
           <div className="bg-[#0b0c10] border border-white/5 rounded-2xl p-4 text-center shadow-md">
             <p className="text-[11px] text-white/50 leading-relaxed font-medium">
               {phase === "results" ? "원석 자산 분산 추출 및 정제 시퀀스 완료." : theme.description}
@@ -444,14 +470,14 @@ export default function Page() {
           </div>
         </div>
 
-        {/* 하단 결과창 */}
+        {/* 하단 10줄 조합 결과 보드창 (박살났던 UI 완전 원상복구) */}
         <section 
           className={`transition-all duration-500 ease-out overflow-hidden bg-[#07080c] border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] rounded-t-[36px] ${
             isResults ? "h-[360px] opacity-100" : "h-0 opacity-0 pointer-events-none"
           }`}
         >
-          <div className="p-6 flex flex-col h-full gap-4">
-            <div className="flex justify-between items-center border-b border-white/5 pb-2">
+          <div className="p-6 flex flex-col h-full gap-4 w-full">
+            <div className="flex justify-between items-center border-b border-white/5 pb-2 w-full">
               <h2 className="text-white font-black text-xs tracking-wider">EXTRACTED MATRICES</h2>
               <button 
                 onClick={handleReset} 
@@ -461,7 +487,7 @@ export default function Page() {
               </button>
             </div>
             
-            <ul className="flex-1 flex flex-col gap-1.5 overflow-y-auto pr-1">
+            <ul className="flex-1 flex flex-col gap-1.5 overflow-y-auto pr-1 w-full">
               {rows.map((row, i) => (
                 <EmbeddedLootRow key={row.id} row={row} index={i} config={theme} />
               ))}
