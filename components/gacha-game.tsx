@@ -157,9 +157,7 @@ export function GachaGame() {
                 width={148}
                 height={148}
                 priority
-                className={`pixelated h-[148px] w-[148px] object-contain object-bottom drop-shadow-[0_6px_0_rgba(0,0,0,0.5)] ${
-                  frame === "idle" ? "scale-x-[-1]" : ""
-                }`}
+                className="pixelated h-[148px] w-[148px] object-contain object-bottom drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
               />
             </span>
           </button>
