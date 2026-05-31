@@ -1,8 +1,14 @@
 "use client"
 
-const GEM = "#38b764"
-const GEM_LIGHT = "#a7f070"
-const GEM_DARK = "#1f6b3e"
+// Amethyst crystal palette (matches the reference's first ore).
+const GEM = "#9b5de5"
+const GEM_LIGHT = "#d9b8ff"
+const GEM_DARK = "#5a2a9e"
+
+// Brown rocky base palette.
+const ROCK = "#8a6a44"
+const ROCK_LIGHT = "#b08e5e"
+const ROCK_DARK = "#5c4128"
 
 // Elongated crystal gem shape (pointed top, faceted body).
 const GEM_CLIP = "polygon(50% 0, 78% 22%, 100% 62%, 70% 100%, 30% 100%, 0 62%, 22% 22%)"
@@ -71,15 +77,24 @@ export function OreRock({
       {/* shadow on ground */}
       <div className="absolute bottom-1 left-1/2 h-3 w-[112px] -translate-x-1/2 rounded-full bg-black/40 blur-[1px]" />
       {/* main mound */}
-      <div className="absolute bottom-[10px] left-1/2 h-9 w-[110px] -translate-x-1/2 rounded-t-[10px] rounded-b-[4px] border-2 border-black/60 bg-[#54506a]" />
+      <div
+        className="absolute bottom-[10px] left-1/2 h-9 w-[110px] -translate-x-1/2 rounded-t-[10px] rounded-b-[4px] border-2 border-black/60"
+        style={{ background: ROCK }}
+      />
       {/* left hump */}
-      <div className="absolute bottom-[24px] left-[14px] h-7 w-12 rounded-[8px] border-2 border-black/60 bg-[#5e5a76]" />
+      <div
+        className="absolute bottom-[24px] left-[14px] h-7 w-12 rounded-[8px] border-2 border-black/60"
+        style={{ background: ROCK_LIGHT }}
+      />
       {/* right hump */}
-      <div className="absolute bottom-[22px] right-[12px] h-6 w-11 rounded-[8px] border-2 border-black/60 bg-[#494560]" />
+      <div
+        className="absolute bottom-[22px] right-[12px] h-6 w-11 rounded-[8px] border-2 border-black/60"
+        style={{ background: ROCK_DARK }}
+      />
       {/* highlight + shading speckles */}
-      <div className="absolute bottom-[30px] left-[26px] h-2 w-7 rounded-full bg-[#7a7592]" />
-      <div className="absolute bottom-[16px] left-[44px] h-1.5 w-6 rounded-full bg-[#34303f]" />
-      <div className="absolute bottom-[18px] right-[26px] h-1.5 w-5 rounded-full bg-[#34303f]" />
+      <div className="absolute bottom-[30px] left-[26px] h-2 w-7 rounded-full" style={{ background: ROCK_LIGHT }} />
+      <div className="absolute bottom-[16px] left-[44px] h-1.5 w-6 rounded-full" style={{ background: ROCK_DARK }} />
+      <div className="absolute bottom-[18px] right-[26px] h-1.5 w-5 rounded-full" style={{ background: ROCK_DARK }} />
 
       {broken ? (
         <>
