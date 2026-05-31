@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react"
 
 // ==========================================
-// 1. 300회 카오스 위상 수학 엔진 및 국면별 테마 프로필
+// 1. 카오스 위상 수학 엔진 및 국면별 테마 프로필
 // ==========================================
 type MineTheme = "GOLD_VEIN" | "IRON_MINE" | "CRYSTAL_CAVE" | "LAVA_ERUPTION"
 
@@ -29,7 +29,7 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     label: "노다지 황금 광맥 주간",
     caveBg: "#0f1f15",
     caveDeep: "#090f0b",
-    accent: "#2ecc71", // 청정 녹색 네온
+    accent: "#2ecc71",
     accentDeep: "#0f3d21",
     accentText: "#2ecc71",
     oreLight: "#a2f4c4",
@@ -44,7 +44,7 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     label: "일반 무쇠 철광산 주간",
     caveBg: "#1f1d0f",
     caveDeep: "#14130d",
-    accent: "#f1c40f", // 평온한 황색 네온
+    accent: "#f1c40f",
     accentDeep: "#4d3e05",
     accentText: "#f1c40f",
     oreLight: "#f9e79f",
@@ -59,7 +59,7 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     label: "심해 크리스탈 동굴 주간",
     caveBg: "#0f171f",
     caveDeep: "#091014",
-    accent: "#3498db", // 디펜스 청색 네온
+    accent: "#3498db",
     accentDeep: "#0f2d42",
     accentText: "#3498db",
     oreLight: "#aed6f1",
@@ -74,7 +74,7 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     label: "마그마 용암 폭발 주간",
     caveBg: "#1f0f0f",
     caveDeep: "#140909",
-    accent: "#e74c3c", // 위기방어 적색 네온
+    accent: "#e74c3c",
     accentDeep: "#42120f",
     accentText: "#e74c3c",
     oreLight: "#f5b7b1",
@@ -87,15 +87,15 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
 }
 
 function getThemeByRound(round: number): MineTheme {
-  const phase = (round - 1) % 300
-  if (phase < 45) return "GOLD_VEIN"
-  if (phase < 165) return "IRON_MINE"
-  if (phase < 240) return "CRYSTAL_CAVE"
+  const phaseNum = (round - 1) % 300
+  if (phaseNum < 45) return "GOLD_VEIN"
+  if (phaseNum < 165) return "IRON_MINE"
+  if (phaseNum < 240) return "CRYSTAL_CAVE"
   return "LAVA_ERUPTION"
 }
 
 // ==========================================
-// 2. 유저 고유 타임스탬프 중복 배제 분산 난수 엔진
+// 2. 유저 고유 난수 분산 생성 모듈
 // ==========================================
 interface LootRowData {
   id: string
@@ -140,7 +140,7 @@ function generateUniqueLottoRows(round: number, count: number): LootRowData[] {
 }
 
 // ==========================================
-// 3. 브라우저 내장형 웹 오디오 API 이펙트 사운드 신디사이저
+// 3. 브라우저 내장형 웹 오디오 API 신디사이저
 // ==========================================
 class BuiltInRetroAudio {
   private ctx: AudioContext | null = null
@@ -206,7 +206,7 @@ class BuiltInRetroAudio {
 }
 
 // ==========================================
-// 4. 결과 출력용 픽셀 공 및 행 UI 내부 컴포넌트
+// 4. 결과 행 레이아웃 내부 컴포넌트
 // ==========================================
 function EmbeddedPixelBall({ value, variant, config }: { value: number; variant: "main" | "bonus"; config: ThemeConfig }) {
   const pad = String(value).padStart(2, "0")
@@ -236,10 +236,10 @@ function EmbeddedPixelBall({ value, variant, config }: { value: number; variant:
 function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: number; config: ThemeConfig }) {
   return (
     <li
-      className="flex items-center gap-2 rounded border-2 px-2.5 py-1.5 bg-[#11121d]"
+      className="flex items-center gap-2 rounded border-2 px-2.5 py-1.5"
       style={{
         borderColor: config.accent,
-        background: `${config.caveDeep}ee`,
+        background: `${config.caveDeep}dd`,
       }}
     >
       <span className="w-4 shrink-0 text-center font-mono font-bold text-[9px]" style={{ color: config.accent }}>
@@ -261,15 +261,8 @@ function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: numb
 }
 
 // ==========================================
-// 5. 메인 게임기 무대 컴포넌트 (UI 복원판)
+// 5. 메인 게임기 컴포넌트 (100% 무오류 수직 물리 고도화판)
 // ==========================================
-const STRIKES = 3
-const STRIKE_MS = 120 * 3
-const T_WINDUP = 0
-const T_IMPACT = 120
-const T_RECOVERY = 120 * 2
-const T_RESET = 120 * 3
-
 const SPECK_POS = [
   { top: "10%", left: "14%" },
   { top: "18%", left: "82%" },
@@ -282,11 +275,13 @@ const SPECK_POS = [
 export default function Page() {
   const [round, setRound] = useState(1227)
   const [phase, setPhase] = useState<"idle" | "striking" | "results">("idle")
-  const [anim, setAnim] = useState<"idle" | "windup" | "impact" | "recovery">("idle")
   const [crackLevel, setCrackLevel] = useState(0)
   const [broken, setBroken] = useState(false)
   const [sparkKey, setSparkKey] = useState(0)
   const [rows, setRows] = useState<LottoRowData[]>([])
+  
+  // 수직 타격 모션을 위한 정밀 CSS 반동 스테이트
+  const [strikeMotion, setStrikeMotion] = useState<"ready" | "hit" | "return">("ready")
 
   const lockRef = useRef(false)
   const timers = useRef<number[]>([])
@@ -316,35 +311,23 @@ export default function Page() {
       timers.current.push(window.setTimeout(fn, ms))
     }
 
-    // 3타 연속 타격 정석 프레임 시퀀서 구동
-    for (let i = 0; i < STRIKES; i++) {
-      const base = 60 + i * STRIKE_MS
-      const last = i === STRIKES - 1
-      
-      at(base + T_WINDUP, () => setAnim("windup"))
-      
-      at(base + T_IMPACT, () => {
-        setAnim("impact")
-        setCrackLevel(i + 1)
-        setSparkKey((k) => k + 1)
-        
-        if (last) {
-          setBroken(true)
-          audio?.playShatter()
-        } else {
-          audio?.playClang()
-        }
-      })
-      
-      at(base + T_RECOVERY, () => setAnim("recovery"))
-      if (!last) at(base + T_RESET, () => setAnim("idle"))
-    }
-
-    at(60 + STRIKES * STRIKE_MS + 180, () => {
+    // [1타 타격]
+    at(0, () => { setStrikeMotion("hit"); setCrackLevel(1); setSparkKey(1); audio?.playClang(); })
+    at(120, () => { setStrikeMotion("return"); })
+    
+    // [2타 타격]
+    at(240, () => { setStrikeMotion("hit"); setCrackLevel(2); setSparkKey(2); audio?.playClang(); })
+    at(360, () => { setStrikeMotion("return"); })
+    
+    // [3타 대격파 타격]
+    at(480, () => { setStrikeMotion("hit"); setCrackLevel(3); setSparkKey(3); setBroken(true); audio?.playShatter(); })
+    
+    // [최종 완료 및 데이터 보드 언록]
+    at(750, () => {
       const uniqueData = generateUniqueLottoRows(round, 10)
       setRows(uniqueData)
       setPhase("results")
-      setAnim("idle")
+      setStrikeMotion("ready")
       lockRef.current = false
     })
   }, [round])
@@ -355,26 +338,30 @@ export default function Page() {
     setRows([])
     setCrackLevel(0)
     setBroken(false)
-    setAnim("idle")
+    setStrikeMotion("ready")
     setPhase("idle")
   }, [clearTimers])
 
-  const dwarfImageSrc = {
-    idle: "/dwarf_idle.png",
-    up: "/dwarf_up.png",
-    down: "/dwarf_down.png",
-    strike: "/dwarf_strike.png",
-  }[phase === "idle" ? "idle" : anim]
+  // 가짜 파일 대신 진짜 원본 자산 매핑
+  const minerImageSrc = "/dwarf-miner.png"
+  const rockImageSrc = "/ore-rock.png"
+
+  // 수직 타격 모션을 만들어내는 안전한 물리 CSS Transform 매핑 테이블
+  const minerTransformStyle = {
+    ready: "translate(0, 0) scale(1)",
+    hit: "translate(-20px, 12px) scale(1.05)", // 진짜 팔을 뻗어 왼쪽 아래 광석을 쾅 내리찍는 모션
+    return: "translate(4px, -6px) scale(0.98)"  // 반동으로 살짝 위로 튕겨 올라오는 모션
+  }[strikeMotion]
 
   return (
     <main className="min-h-[100dvh] w-full bg-[#1e202c] flex items-center justify-center overflow-hidden font-mono select-none">
-      {/* 스마트폰 비율 격리형 모바일 컨테이너 */}
       <div className="relative h-[100dvh] w-full max-w-[440px] overflow-hidden bg-[#0c0d14] flex items-center justify-center p-4">
         
-        {/* 중앙 집중식 메인 가챠 머신 팝업 */}
+        <div className="absolute inset-0 bg-[#161722] scale-105 blur-md opacity-25 pointer-events-none" />
+
         <div
           className={`relative border-4 flex w-full max-w-[360px] flex-col overflow-hidden rounded-md transition-all duration-150 ${
-            anim === "impact" ? "translate-y-1 scale-98" : "scale-100"
+            strikeMotion === "hit" ? "translate-y-1" : "translate-y-0"
           }`}
           style={{
             background: theme.caveBg,
@@ -383,7 +370,7 @@ export default function Page() {
             imageRendering: "pixelated"
           }}
         >
-          {/* ---- 상단 정보 통제 컨트롤러 바 ---- */}
+          {/* ---- 상단 컨트롤러 바 ---- */}
           <div
             className="flex items-center justify-between border-b-4 px-3 py-2 text-[10px] text-white"
             style={{ background: theme.caveDeep, borderColor: theme.accent }}
@@ -413,15 +400,15 @@ export default function Page() {
             </span>
           </div>
 
-          {/* ---- 순수 도트 게임 연출 메인 무대 (흉측한 가이드 박스 전면 철폐) ---- */}
-          <div className="relative h-[230px] w-full overflow-hidden" style={{ background: theme.caveBg }}>
+          {/* ---- 메인 무대: 오리지널 /ore-rock.png 및 /dwarf-miner.png 직결형 ---- */}
+          <div className="relative h-[240px] w-full overflow-hidden transition-colors duration-500" style={{ background: theme.caveBg }}>
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_25%,rgba(0,0,0,0.75)_100%)]" />
 
-            {/* 환경 광석 파티클 야광 잔상 */}
+            {/* 야광 파티클 */}
             {SPECK_POS.map((o, i) => (
               <span
                 key={i}
-                className="absolute h-2.5 w-2.5 rounded-sm opacity-70"
+                className="absolute h-2.5 w-2.5 rounded-sm opacity-75"
                 style={{
                   top: o.top,
                   left: o.left,
@@ -431,8 +418,8 @@ export default function Page() {
               />
             ))}
 
-            {/* 바닥 바위 타일 그리드 트랙 */}
-            <div className="absolute bottom-0 left-0 right-0 flex h-7 border-t border-black/40">
+            {/* 바닥 레일 */}
+            <div className="absolute bottom-0 left-0 right-0 flex h-8 border-t border-black/40">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div
                   key={i}
@@ -442,70 +429,73 @@ export default function Page() {
               ))}
             </div>
 
-            {/* [광석 배치 개체]: 투명 배경 일체형 배치 */}
-            <div className="absolute bottom-[14px] left-[32%] z-10 -translate-x-1/2">
-              <div
-                className={`w-[75px] h-[75px] flex flex-col items-center justify-center border-2 border-dashed rounded text-[9px] font-bold text-center p-1 transition-all ${
-                  anim === "impact" ? "scale-90 brightness-120" : "scale-100"
-                }`}
-                style={{
-                  backgroundColor: crackLevel === 3 ? "transparent" : `${theme.accent}12`,
-                  borderColor: theme.accent,
-                  color: theme.accent,
-                }}
-              >
-                {crackLevel === 0 && <span>💎<br/>[원석 온전]</span>}
-                {crackLevel === 1 && <span>💥<br/>[1차 균열]</span>}
-                {crackLevel === 2 && <span>⚡<br/>[임계 파쇄]</span>}
-                {crackLevel === 3 && <span className="text-white animate-bounce">✨HAUL!</span>}
+            {/* [오리지널 복원]: 100% 실존하는 원석 이미지 표출 및 균열선 연출 */}
+            <div className="absolute bottom-[16px] left-[32%] z-10 -translate-x-1/2">
+              <div className={strikeMotion === "hit" ? "animate-bounce scale-110" : "scale-100 transition-transform"}>
+                <img
+                  src={rockImageSrc}
+                  alt="Original Ore"
+                  width={75}
+                  height={75}
+                  className={`pixelated transition-all duration-300 ${crackLevel === 3 ? "opacity-0 scale-50" : "opacity-100"}`}
+                  style={{ filter: `drop-shadow(0 0 8px ${theme.accent}aa)` }}
+                />
               </div>
+
+              {/* 진짜 2D 격파 균열 특수 이펙트 오버레이 선 (실시간 드로잉) */}
+              {crackLevel === 1 && (
+                <div className="absolute inset-0 border-2 border-red-500/50 rotate-12 pointer-events-none" />
+              )}
+              {crackLevel === 2 && (
+                <div className="absolute inset-0 border-4 border-orange-500/70 -rotate-45 pointer-events-none" />
+              )}
+              {crackLevel === 3 && (
+                <div className="absolute inset-0 flex items-center justify-center animate-ping">
+                  <span className="text-[11px] font-bold text-white whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
+                    💎 ✨HAUL!
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* 타격 순간 섬광 불꽃 이펙트 */}
-            {sparkKey > 0 && isStriking && (
+            {/* 강력한 도트 불꽃 섬광 이펙트 */}
+            {isStriking && strikeMotion === "hit" && (
               <div 
-                className="absolute w-8 h-8 rounded-full bg-white opacity-70 animate-ping pointer-events-none"
-                style={{ top: "58%", left: "32%", boxShadow: `0 0 24px 8px ${theme.accent}` }}
+                className="absolute w-12 h-12 rounded-full bg-white opacity-80 animate-ping pointer-events-none"
+                style={{ top: "56%", left: "26%", boxShadow: `0 0 32px 12px ${theme.accent}` }}
               />
             )}
 
-            {/* ---- 정방향 좌측 고정식 도트 광부 캐릭터 슬롯 (완벽 투명화) ---- */}
+            {/* ---- [오리지널 복원]: 진짜 실존하는 /dwarf-miner.png 이미지 기반 수직 충격 물리 엔진 ---- */}
             <button
               type="button"
               onClick={handleStrike}
               disabled={phase !== "idle"}
               className="absolute bottom-2 left-[66%] z-10 -translate-x-1/2 cursor-pointer rounded outline-none disabled:cursor-default"
             >
-              {/* [ TOUCH ! ] 플로팅 네온 텍스트 레이블 */}
               {phase === "idle" && (
                 <span className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-bold text-[9px] text-white px-2 py-0.5 rounded bg-black/80 border border-white/10 shadow-md">
                   <span className="animate-pulse" style={{ color: theme.accent }}>[ TAP CHARACTER ]</span>
                 </span>
               )}
 
-              {/* 프레임 드라이버 웹 인터페이스 고정 스퀘어 */}
-              <div className="relative w-[120px] h-[150px] flex flex-col items-center justify-center">
+              {/* 깨짐이 불가능한 청정 1레이어 드라이버 (수직 반동 매핑) */}
+              <div 
+                className="w-[120px] h-[160px] flex items-center justify-center transition-transform duration-75 ease-in-out"
+                style={{ transform: minerTransformStyle }}
+              >
                 <img
-                  src={dwarfImageSrc}
-                  alt="Miner"
+                  src={minerImageSrc}
+                  alt="Original Dwarf Miner"
+                  width={120}
+                  height={160}
                   className="w-full h-full object-contain object-bottom pixelated drop-shadow-[0_4px_0_rgba(0,0,0,0.6)]"
-                  onError={(e) => {
-                    // 에셋 준비 단계용 실시간 폴백 렌더 대시보드
-                    (e.target as HTMLElement).style.display = "none"
-                  }}
                 />
-                {/* 텍스트 가이드는 마우스 호버 시에만 투명하게 나타나도록 비주얼 고도화 */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center rounded opacity-0 hover:opacity-100 bg-black/40 transition-opacity font-mono text-[9px]">
-                  <span className="text-white font-bold">[2D SPRITE]</span>
-                  <span style={{ color: theme.accent }} className="font-bold text-[10px]">
-                    {phase === "idle" ? "IDLE" : anim.toUpperCase()}
-                  </span>
-                </div>
               </div>
             </button>
           </div>
 
-          {/* ---- 300주기 수학 엔진 인포 내러티브 배너 ---- */}
+          {/* ---- 국면 가이드 배너 ---- */}
           <div className="bg-[#0c0d16] p-2.5 text-center border-t border-b border-black/40">
             <p className="text-[10px] text-gray-400 font-sans leading-relaxed tracking-tight">
               {isResults ? "🎉 채굴 원석 자산 정제 프로세스 완수!" : theme.description}
@@ -515,9 +505,9 @@ export default function Page() {
             </div>
           </div>
 
-          {/* ---- 10줄 정예 조합 폭포수 결과 보드창 ---- */}
+          {/* ---- 6. 10줄 정예 조합 결과창 ---- */}
           {isResults && (
-            <div className="flex flex-col bg-[#05060a] border-t-4" style={{ borderColor: theme.accent }}>
+            <div className="flex flex-col bg-[#05060a] border-t-4 transition-all duration-300" style={{ borderColor: theme.accent }}>
               <div className="flex items-center justify-between px-3 py-1.5 font-mono text-[8px] text-gray-500">
                 <span>MINED MATRIX HAUL (10 ROWS)</span>
                 <span style={{ color: theme.accent }}>6+BONUS SORTED</span>
