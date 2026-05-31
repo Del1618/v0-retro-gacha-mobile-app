@@ -7,14 +7,20 @@ import { OreRock } from "@/components/ore-rock"
 import { generateRows, type LottoRow } from "@/lib/lottery"
 
 type Phase = "idle" | "striking" | "results"
-type Frame = "idle" | "raise" | "strike"
 
-// Each pose is its own image, swapped in sequence to play the mining motion.
-const FRAME_SRC: Record<Frame, string> = {
-  idle: "/dwarf-miner.png",
-  raise: "/dwarf-raise.png",
-  strike: "/dwarf-strike.png",
-}
+// Six sequential mining frames built from the original (mirrored) dwarf sprite.
+// `rot` swings the pickaxe, `hits`/`broken` shrink the ore so it visibly
+// wears down to nothing as the dwarf chops it.
+const FRAMES = [
+  { rot: -10, hits: 0, broken: false, spark: false }, // ready, lean back
+  { rot: -28, hits: 0, broken: false, spark: false }, // wind up high
+  { rot: 22, hits: 1, broken: false, spark: true }, // first chop -> impact
+  { rot: -24, hits: 1, broken: false, spark: false }, // lift again
+  { rot: 22, hits: 2, broken: false, spark: true }, // second chop -> impact
+  { rot: 8, hits: 3, broken: true, spark: true }, // final crush, ore breaks
+] as const
+
+const FRAME_MS = 220
 
 // Background ambient ore specks scattered on the cave walls.
 const SPECKS = [
@@ -26,15 +32,10 @@ const SPECKS = [
   { top: "8%", left: "52%", color: "#38b764" },
 ]
 
-const SWINGS = 3
-const SWING_MS = 380 // time per raise->strike cycle
-
 export function GachaGame() {
   const [phase, setPhase] = useState<Phase>("idle")
-  const [frame, setFrame] = useState<Frame>("idle")
+  const [frameIdx, setFrameIdx] = useState(0)
   const [rows, setRows] = useState<LottoRow[]>([])
-  const [hits, setHits] = useState(0)
-  const [broken, setBroken] = useState(false)
   const [sparkKey, setSparkKey] = useState(0)
   const lockRef = useRef(false)
 
@@ -44,35 +45,31 @@ export function GachaGame() {
 
     setPhase("striking")
 
-    // Each swing: wind up (raise frame) then slam (strike frame + impact fx).
-    for (let i = 0; i < SWINGS; i++) {
-      const base = 80 + i * SWING_MS
-      const impact = base + 200
-      window.setTimeout(() => setFrame("raise"), base)
+    // Step through all six frames in order.
+    FRAMES.forEach((f, i) => {
       window.setTimeout(() => {
-        setFrame("strike")
-        setHits(i + 1)
-        setSparkKey((k) => k + 1)
-        if (i === SWINGS - 1) setBroken(true)
-      }, impact)
-    }
+        setFrameIdx(i)
+        if (f.spark) setSparkKey((k) => k + 1)
+      }, 80 + i * FRAME_MS)
+    })
 
-    // Reveal loot after the ore shatters.
+    // Reveal loot after the final frame plays out. Keep the last frame so the
+    // ore stays mined-out (broken) in the results view instead of regrowing.
     window.setTimeout(() => {
       setRows(generateRows(10))
       setPhase("results")
-      setFrame("idle")
+      setFrameIdx(FRAMES.length - 1)
       lockRef.current = false
-    }, 80 + SWINGS * SWING_MS + 320)
+    }, 80 + FRAMES.length * FRAME_MS + 260)
   }, [])
 
   const handleReset = useCallback(() => {
     setRows([])
-    setHits(0)
-    setBroken(false)
-    setFrame("idle")
+    setFrameIdx(0)
     setPhase("idle")
   }, [])
+
+  const current = FRAMES[frameIdx]
 
   const isResults = phase === "results"
 
@@ -123,25 +120,25 @@ export function GachaGame() {
             ))}
           </div>
 
-          {/* ---- The target amethyst ore ---- */}
-          <div className="absolute bottom-[18px] left-[64%] z-10 -translate-x-1/2">
-            <div key={sparkKey} className={sparkKey > 0 && !broken ? "animate-ore-hit" : ""}>
-              <OreRock hits={hits} broken={broken} />
+          {/* ---- The target amethyst ore (left side, wears down each frame) ---- */}
+          <div className="absolute bottom-[18px] left-[36%] z-10 -translate-x-1/2">
+            <div key={sparkKey} className={sparkKey > 0 && !current.broken ? "animate-ore-hit" : ""}>
+              <OreRock hits={current.hits} broken={current.broken} />
             </div>
           </div>
 
           {/* impact burst lands where the pickaxe head meets the ore */}
           {sparkKey > 0 && phase === "striking" && (
-            <SparkBurst key={sparkKey} top="64%" left="55%" />
+            <SparkBurst key={sparkKey} top="64%" left="42%" />
           )}
 
-          {/* ---- The dwarf (frame-based mining animation) ---- */}
+          {/* ---- The dwarf (mirrored first design, 6-frame mining swing) ---- */}
           <button
             type="button"
             onClick={handleStrike}
             disabled={phase !== "idle"}
             aria-label="Strike the rock to mine your numbers"
-            className="absolute bottom-4 left-[39%] z-10 -translate-x-1/2 cursor-pointer rounded-sm outline-none focus-visible:ring-4 focus-visible:ring-retro-cyan disabled:cursor-default"
+            className="absolute bottom-4 left-[62%] z-10 -translate-x-1/2 cursor-pointer rounded-sm outline-none focus-visible:ring-4 focus-visible:ring-retro-cyan disabled:cursor-default"
           >
             {/* floating tooltip */}
             {phase === "idle" && (
@@ -152,11 +149,16 @@ export function GachaGame() {
 
             <span className={`block ${phase === "idle" ? "animate-breathe" : ""}`}>
               <img
-                src={FRAME_SRC[frame] || "/placeholder.svg"}
+                src="/dwarf-miner.png"
                 alt="Pixel dwarf miner swinging a pickaxe"
                 width={150}
                 height={150}
                 className="pixelated h-[150px] w-[150px] object-contain object-bottom drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
+                style={{
+                  transform: `scaleX(-1) rotate(${phase === "striking" ? current.rot : 0}deg)`,
+                  transformOrigin: "50% 88%",
+                  transition: "transform 0.12s ease-out",
+                }}
               />
             </span>
           </button>
