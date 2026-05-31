@@ -199,6 +199,19 @@
 .animate-shake {
   animation: screen-shake 1s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
+/* short, punchy shake retriggered on every impact frame */
+.animate-shake-short {
+  animation: screen-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* ---- Result panel slides up from the bottom ---- */
+@keyframes results-rise {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.animate-results-rise {
+  animation: results-rise 0.42s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
 
 /* ---- Strike hit on dwarf ---- */
 @keyframes strike {
