@@ -159,7 +159,7 @@ function generateEmbeddedLottoRows(round: number, count: number): any[] {
   return results
 }
 
-// --- [귀맛 추가] 브라우저 내장형 웹 오디오 API chiptune 합성 엔진 ---
+// --- [귀맛 추가] 브라우��� 내장형 웹 오디오 API chiptune 합성 엔진 ---
 class BuiltInRetroAudio {
   private ctx: AudioContext | null = null
 
@@ -416,4 +416,65 @@ export function GachaGame() {
               </span>
             )}
 
-            {/* 변형 꼼수 전면 철폐! 깨
+            {/* 변형 꼼수 전면 철폐! 깨끗하게 분리된 정방향 좌측 고정식 프레임 이미지 스위칭 */}
+            <span className={`block ${phase === "idle" ? "animate-breathe" : ""}`}>
+              <img
+                src={FRAME_SRC[phase === "idle" ? "idle" : anim] || "/placeholder.svg"}
+                alt="곡괭이를 휘두르는 도트 광부"
+                width={120}
+                height={180}
+                className="pixelated h-[150px] w-[100px] object-contain object-bottom drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
+              />
+            </span>
+          </button>
+        </div>
+
+        {/* ---- 하단 데이터 보드: 3타 완료 후에만 아래에서 솟아오르는 결과 패널 ---- */}
+        <div
+          className="relative w-full overflow-hidden border-t-4"
+          style={{ background: theme.caveDeep, borderColor: theme.accent }}
+        >
+          {!isResults ? (
+            <div className="flex h-[120px] flex-col items-center justify-center gap-1 px-4 text-center">
+              <span className="font-mono text-[11px] font-bold text-white">
+                {isStriking ? "채굴 중... 바위를 부수는 중!" : "캐릭터를 터치해 광맥을 채굴하세요"}
+              </span>
+              <span className="font-mono text-[9px] leading-relaxed text-gray-400">
+                {theme.description}
+              </span>
+            </div>
+          ) : (
+            <div className="animate-results-rise flex max-h-[260px] flex-col">
+              <div
+                className="flex items-center justify-between border-b-2 px-3 py-1.5"
+                style={{ borderColor: `${theme.accent}55` }}
+              >
+                <span className="font-mono text-[10px] font-bold" style={{ color: theme.accent }}>
+                  {`제 ${round} 회차 · 채굴 완료 (10조합)`}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="rounded border-2 px-2 py-0.5 font-mono text-[9px] font-bold text-white active:translate-y-px"
+                  style={{ borderColor: theme.accent, background: theme.accentDeep }}
+                >
+                  다시 채굴
+                </button>
+              </div>
+              <ul className="flex flex-col gap-1.5 overflow-y-auto px-2.5 py-2">
+                {rows.map((r, i) => (
+                  <LootRow
+                    key={r.id}
+                    index={i}
+                    themeKey={theme.key}
+                    row={{ id: r.id, numbers: r.main, bonus: r.bonus }}
+                  />
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
