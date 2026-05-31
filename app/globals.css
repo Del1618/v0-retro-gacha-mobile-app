@@ -250,15 +250,17 @@
   animation: ore-pulse 2.2s ease-in-out infinite;
 }
 
-/* ---- Dwarf pickaxe swing (lunges toward ore, repeats) ---- */
+/* ---- Dwarf pickaxe chop (pivots on his feet, swings into the ore, repeats) ---- */
 @keyframes mine-swing {
-  0%   { transform: translate(0, 0) rotate(0deg); }
-  25%  { transform: translate(7px, -4px) rotate(5deg); }   /* wind up & back */
-  52%  { transform: translate(16px, 5px) rotate(11deg); }  /* strike down */
-  64%  { transform: translate(13px, 4px) rotate(9deg); }   /* impact recoil */
-  100% { transform: translate(0, 0) rotate(0deg); }
+  0%   { transform: rotate(-12deg) translateY(-2px); }  /* wind up, lean away */
+  18%  { transform: rotate(-14deg) translateY(-3px); }  /* peak of wind up */
+  46%  { transform: rotate(14deg)  translateY(3px); }   /* chop down into ore */
+  58%  { transform: rotate(17deg)  translateY(4px); }   /* impact thud */
+  70%  { transform: rotate(12deg)  translateY(2px); }   /* recoil */
+  100% { transform: rotate(-12deg) translateY(-2px); }  /* reset for next chop */
 }
 .animate-mine {
+  transform-origin: 70% 100%;
   animation: mine-swing 0.36s ease-in-out 3;
 }
 

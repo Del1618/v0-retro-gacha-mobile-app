@@ -110,15 +110,15 @@ export function GachaGame() {
           </div>
 
           {/* ---- The target green ore ---- */}
-          <div className="absolute bottom-[26px] left-[64%] z-10 -translate-x-1/2">
+          <div className="absolute bottom-[20px] left-[66%] z-10 -translate-x-1/2">
             <div key={sparkKey} className={sparkKey > 0 && !broken ? "animate-ore-hit" : ""}>
               <OreRock hits={hits} broken={broken} />
             </div>
           </div>
 
-          {/* spark burst lands on the ore each swing */}
+          {/* spark burst lands on the ore (dwarf side) each chop */}
           {sparkKey > 0 && phase === "striking" && (
-            <SparkBurst key={sparkKey} top="74%" left="64%" />
+            <SparkBurst key={sparkKey} top="58%" left="60%" />
           )}
 
           {/* ---- The dwarf ---- */}
@@ -147,7 +147,7 @@ export function GachaGame() {
                 width={132}
                 height={132}
                 priority
-                className="pixelated h-[132px] w-[132px] drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
+                className="pixelated h-[132px] w-[132px] scale-x-[-1] drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
               />
             </span>
           </button>
