@@ -10,7 +10,7 @@ export function OreRock({ hits, broken }: { hits: number; broken: boolean }) {
   const scale = broken ? 0.4 : 1 - hits * 0.05
   return (
     <div
-      className="relative h-[108px] w-[108px]"
+      className="relative h-[108px] w-[108px] [image-rendering:pixelated]"
       style={{
         transform: `scale(${scale})`,
         opacity: broken ? 0 : 1,
@@ -20,11 +20,11 @@ export function OreRock({ hits, broken }: { hits: number; broken: boolean }) {
       }}
       aria-hidden="true"
     >
-      {/* purple glow aura */}
+      {/* crisp purple glow aura (no blur, keeps the 8-bit look) */}
       <div
-        className="animate-ore-pulse pointer-events-none absolute inset-0 -z-10 blur-md"
+        className="animate-ore-pulse pointer-events-none absolute inset-0 -z-10"
         style={{
-          background: "radial-gradient(circle at 50% 42%, rgba(155,93,229,0.6), transparent 68%)",
+          background: "radial-gradient(circle at 50% 42%, rgba(155,93,229,0.45), transparent 66%)",
         }}
       />
       <Image

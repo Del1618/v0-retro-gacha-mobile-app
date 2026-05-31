@@ -9,18 +9,23 @@ import { generateRows, type LottoRow } from "@/lib/lottery"
 type Phase = "idle" | "striking" | "results"
 
 // Six sequential mining frames built from the original (mirrored) dwarf sprite.
-// `rot` swings the pickaxe, `hits`/`broken` shrink the ore so it visibly
-// wears down to nothing as the dwarf chops it.
+// The sprite is flipped to face LEFT toward the ore; the pickaxe blade ends up
+// on the left, pointing at the rock.
+// - `rot` is applied in the sprite's (mirrored) space, so on screen it reads as
+//   -rot: a NEGATIVE rot lifts the pickaxe up & back (wind-up) and a POSITIVE
+//   rot drives the steel blade DOWN-and-FORWARD into the ore.
+// - `dx` is a screen-space lunge (negative = toward the ore) for impact punch.
+// - `hits`/`broken` shrink the ore so it visibly wears down to nothing.
 const FRAMES = [
-  { rot: -10, hits: 0, broken: false, spark: false }, // ready, lean back
-  { rot: -28, hits: 0, broken: false, spark: false }, // wind up high
-  { rot: 22, hits: 1, broken: false, spark: true }, // first chop -> impact
-  { rot: -24, hits: 1, broken: false, spark: false }, // lift again
-  { rot: 22, hits: 2, broken: false, spark: true }, // second chop -> impact
-  { rot: 8, hits: 3, broken: true, spark: true }, // final crush, ore breaks
+  { rot: -6, dx: 2, hits: 0, broken: false, spark: false }, // ready
+  { rot: -26, dx: 9, hits: 0, broken: false, spark: false }, // wind up high & back
+  { rot: 26, dx: -13, hits: 1, broken: false, spark: true }, // 1st chop -> blade bites
+  { rot: -20, dx: 7, hits: 1, broken: false, spark: false }, // lift again
+  { rot: 26, dx: -13, hits: 2, broken: false, spark: true }, // 2nd chop -> blade bites
+  { rot: 16, dx: -7, hits: 3, broken: true, spark: true }, // final crush, ore breaks
 ] as const
 
-const FRAME_MS = 220
+const FRAME_MS = 200
 
 // Background ambient ore specks scattered on the cave walls.
 const SPECKS = [
@@ -127,9 +132,9 @@ export function GachaGame() {
             </div>
           </div>
 
-          {/* impact burst lands where the pickaxe head meets the ore */}
+          {/* impact burst lands where the pickaxe blade meets the ore */}
           {sparkKey > 0 && phase === "striking" && (
-            <SparkBurst key={sparkKey} top="64%" left="42%" />
+            <SparkBurst key={sparkKey} top="58%" left="38%" />
           )}
 
           {/* ---- The dwarf (mirrored first design, 6-frame mining swing) ---- */}
@@ -147,7 +152,19 @@ export function GachaGame() {
               </span>
             )}
 
-            <span className={`block ${phase === "idle" ? "animate-breathe" : ""}`}>
+            {/* wrapper: screen-space lunge toward the ore (+ idle breathing) */}
+            <span
+              className={`block ${phase === "idle" ? "animate-breathe" : ""}`}
+              style={
+                phase === "striking"
+                  ? {
+                      transform: `translateX(${current.dx}px)`,
+                      transition: "transform 0.1s ease-out",
+                    }
+                  : undefined
+              }
+            >
+              {/* img: mirror to face the ore + pivot the pickaxe at the hands */}
               <img
                 src="/dwarf-miner.png"
                 alt="Pixel dwarf miner swinging a pickaxe"
@@ -156,8 +173,8 @@ export function GachaGame() {
                 className="pixelated h-[150px] w-[150px] object-contain object-bottom drop-shadow-[0_6px_0_rgba(0,0,0,0.5)]"
                 style={{
                   transform: `scaleX(-1) rotate(${phase === "striking" ? current.rot : 0}deg)`,
-                  transformOrigin: "50% 88%",
-                  transition: "transform 0.12s ease-out",
+                  transformOrigin: "50% 62%",
+                  transition: "transform 0.1s ease-out",
                 }}
               />
             </span>

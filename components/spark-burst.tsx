@@ -23,14 +23,23 @@ const RAYS = [0, 90, 45, 135]
 export function SparkBurst({ top = "50%", left = "50%" }: { top?: string; left?: string }) {
   return (
     <div
-      className="pointer-events-none absolute z-30 -translate-x-1/2 -translate-y-1/2"
+      className="pointer-events-none absolute z-30 -translate-x-1/2 -translate-y-1/2 [image-rendering:pixelated]"
       style={{ top, left }}
       aria-hidden="true"
     >
-      {/* central white flash */}
+      {/* central blocky flash (square pixel, no anti-aliasing) */}
       <span
-        className="animate-spark absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-retro-cream"
-        style={{ width: 22, height: 22, ["--dx" as string]: "0px", ["--dy" as string]: "0px" }}
+        className="animate-spark absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 bg-retro-cream"
+        style={{ width: 16, height: 16, ["--dx" as string]: "0px", ["--dy" as string]: "0px" }}
+      />
+      {/* gold pixel ring around the flash */}
+      <span
+        className="animate-spark absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 bg-retro-gold"
+        style={{ width: 26, height: 8, ["--dx" as string]: "0px", ["--dy" as string]: "0px" }}
+      />
+      <span
+        className="animate-spark absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 bg-retro-gold"
+        style={{ width: 8, height: 26, ["--dx" as string]: "0px", ["--dy" as string]: "0px" }}
       />
 
       {/* sharp impact rays */}
