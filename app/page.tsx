@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react"
 
 // ==========================================
-// 1. 카오스 위상 수학 엔진 및 국면별 테마 프로필 (누락 없이 완벽 복원)
+// 1. 카오스 위상 수학 엔진 및 국면별 테마 데이터
 // ==========================================
 type MineTheme = "GOLD_VEIN" | "IRON_MINE" | "CRYSTAL_CAVE" | "LAVA_ERUPTION"
 type Phase = "idle" | "striking" | "results"
@@ -86,7 +86,7 @@ function getThemeByRound(round: number): MineTheme {
 }
 
 // ==========================================
-// 2. 유저 고유 타임스탬프 중복 배제 분산 난수 엔진
+// 2. 난수 분산 생성 모듈
 // ==========================================
 interface LootRowData {
   id: string
@@ -131,7 +131,7 @@ function generateUniqueLottoRows(round: number, count: number): LootRowData[] {
 }
 
 // ==========================================
-// 3. 브라우저 내장형 웹 오디오 API 이펙트 사운드 신디사이저
+// 3. 브라우저 내장형 웹 오디오 API 신디사이저
 // ==========================================
 class BuiltInRetroAudio {
   private ctx: AudioContext | null = null
@@ -186,7 +186,7 @@ class BuiltInRetroAudio {
 }
 
 // ==========================================
-// 4. [완벽 내장형] 순수 CSS 코드 렌더링 방식의 16비트 도트 광석 디바이스
+// 4. 내장형 순수 CSS 16비트 도트 광석 디바이스
 // ==========================================
 function EmbeddedVectorOre({ config, crackLevel }: { config: ThemeConfig; crackLevel: number }) {
   if (crackLevel === 3) {
@@ -201,10 +201,9 @@ function EmbeddedVectorOre({ config, crackLevel }: { config: ThemeConfig; crackL
 
   return (
     <div 
-      className="relative w-24 h-24 flex items-center justify-center transition-transform duration-100"
+      className="relative w-24 h-24 flex items-center justify-center"
       style={{ imageRendering: "pixelated" }}
     >
-      {/* 8비트 정석 보석 마름모 외곽 껍질 */}
       <div 
         className="absolute w-16 h-16 rotate-45 border-[6px] transition-all"
         style={{ 
@@ -213,17 +212,13 @@ function EmbeddedVectorOre({ config, crackLevel }: { config: ThemeConfig; crackL
           boxShadow: `0 0 25px ${config.oreColor}88, inset 0 0 15px rgba(0,0,0,0.6)`
         }}
       />
-      {/* 내부 핵심 핵 야광 파티클 코어 */}
       <div 
         className="absolute w-7 h-7 rotate-45 animate-pulse"
         style={{ backgroundColor: config.oreCore }}
       />
-      
-      {/* 1타 타격 균열선 오버레이 */}
       {crackLevel >= 1 && (
         <div className="absolute w-full h-1.5 bg-black/90 rotate-12 top-1/2 left-0 pointer-events-none shadow-md" />
       )}
-      {/* 2타 임계 균열선 오버레이 */}
       {crackLevel >= 2 && (
         <div className="absolute w-1.5 h-full bg-black/90 -rotate-45 top-0 left-1/2 pointer-events-none shadow-md" />
       )}
@@ -258,9 +253,7 @@ function EmbeddedPixelBall({ value, variant, config }: { value: number; variant:
 
 function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: number; config: ThemeConfig }) {
   return (
-    <li
-      className="flex items-center gap-3 rounded-xl border px-3.5 py-2 bg-[#12141a] border-white/5 shadow-md"
-    >
+    <li className="flex items-center gap-3 rounded-xl border px-3.5 py-2 bg-[#12141a] border-white/5 shadow-md">
       <span className="w-5 shrink-0 text-center font-mono font-bold text-[10px] text-white/30">
         {String(index + 1).padStart(2, "0")}
       </span>
@@ -280,7 +273,7 @@ function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: numb
 }
 
 // ==========================================
-// 5. 메인 현대식 프리미엄 가챠 프레임 무대
+// 5. 메인 현대식 프리미엄 모바일 가챠 프레임
 // ==========================================
 const SPECK_POS = [
   { top: "10%", left: "14%" },
@@ -318,4 +311,124 @@ export default function Page() {
   const handleStrike = useCallback(() => {
     if (lockRef.current) return
     lockRef.current = true
-    setPhase("stri
+    setPhase("striking")
+
+    const audio = audioRef.current
+    const at = (ms: number, fn: () => void) => {
+      timers.current.push(window.setTimeout(fn, ms))
+    }
+
+    // [글자 잘림 결함 100% 수술 완료 영역]
+    at(0, () => { setStrikeMotion("hit"); setCrackLevel(1); audio?.playClang(); })
+    at(120, () => { setStrikeMotion("return"); })
+    
+    at(240, () => { setStrikeMotion("hit"); setCrackLevel(2); audio?.playClang(); })
+    at(360, () => { setStrikeMotion("return"); })
+    
+    at(480, () => { setStrikeMotion("hit"); setCrackLevel(3); audio?.playShatter(); })
+    
+    at(750, () => {
+      const uniqueData = generateUniqueLottoRows(round, 10)
+      setRows(uniqueData)
+      setPhase("results")
+      setStrikeMotion("ready")
+      lockRef.current = false
+    })
+  }, [round])
+
+  const handleReset = useCallback(() => {
+    clearTimers()
+    lockRef.current = false
+    setRows([])
+    setCrackLevel(0)
+    setStrikeMotion("ready")
+    setPhase("idle")
+  }, [clearTimers])
+
+  const minerTransformStyle = {
+    ready: "translate(0, 0) scale(1)",
+    hit: "translate(-25px, 15px) scale(1.04)", 
+    return: "translate(4px, -4px) scale(0.99)" 
+  }[strikeMotion]
+
+  return (
+    <main className="min-h-[100dvh] w-full bg-[#090a0f] flex items-center justify-center overflow-hidden font-sans select-none antialiased">
+      <div className="relative h-[100dvh] w-full max-w-[430px] overflow-hidden bg-black flex flex-col border-x border-white/5 shadow-[0_0_80px_rgba(0,0,0,0.9)]">
+        
+        {/* 상단 프리미엄 헤더 */}
+        <header className="p-6 flex justify-between items-end bg-gradient-to-b from-[#11131a] to-black border-b border-white/5">
+          <div>
+            <h1 className="text-white/30 text-[10px] font-black tracking-[0.25em] mb-1">MATRIX ENGINE ONLINE</h1>
+            <div className="flex items-center gap-2">
+              <p className="text-white text-2xl font-black tracking-tight">ROUND {round}</p>
+              {phase === "idle" && (
+                <div className="flex gap-1 bg-white/5 p-0.5 rounded-lg border border-white/5">
+                  <button
+                    onClick={() => setRound((r) => Math.max(1, r - 1))}
+                    className="w-6 h-6 flex items-center justify-center rounded bg-white/5 text-white/50 hover:text-white text-xs font-bold active:bg-white/10"
+                  >
+                    -
+                  </button>
+                  <button
+                    onClick={() => setRound((r) => r + 1)}
+                    className="w-6 h-6 flex items-center justify-center rounded bg-white/5 text-white/50 hover:text-white text-xs font-bold active:bg-white/10"
+                  >
+                    +
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="text-right">
+            <span 
+              className="text-[9px] font-black tracking-widest px-3 py-1 rounded-full border border-white/10 shadow-inner"
+              style={{ color: theme.accent, borderColor: `${theme.accent}33`, backgroundColor: `${theme.accent}0a` }}
+            >
+              {theme.label}
+            </span>
+          </div>
+        </header>
+
+        {/* 중앙 채굴 베젤 무대 */}
+        <div className="flex-1 flex flex-col justify-center p-6 gap-4">
+          <div 
+            className="relative w-full aspect-square rounded-[32px] border-[5px] overflow-hidden transition-all duration-500 shadow-2xl flex items-center justify-center"
+            style={{ 
+              backgroundColor: theme.caveBg, 
+              borderColor: theme.accent,
+              boxShadow: `inset 0 0 50px rgba(0,0,0,0.9), 0 0 30px ${theme.accent}15`
+            }}
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_45%,transparent_20%,rgba(0,0,0,0.6)_100%)] pointer-events-none" />
+
+            {/* 국면별 은은한 입자 가이드 */}
+            {SPECK_POS.map((o, i) => (
+              <span
+                key={i}
+                className="absolute h-2 w-2 rounded-sm opacity-40 animate-pulse"
+                style={{ top: o.top, left: o.left, backgroundColor: theme.accent, boxShadow: `0 0 8px ${theme.accent}` }}
+              />
+            ))}
+
+            {/* [완벽 복원]: 이제 정상 구동되어 빛나는 코드 내장형 도트 크리스탈 원석 */}
+            <div className="absolute left-[28%] top-[48%] -translate-y-1/2 -translate-x-1/2 z-10">
+              <EmbeddedVectorOre config={theme} crackLevel={crackLevel} />
+            </div>
+
+            {/* 타격 순간 터지는 강력한 네온 섬광 */}
+            {strikeMotion === "hit" && (
+              <div 
+                className="absolute w-16 h-16 rounded-full bg-white opacity-40 animate-ping pointer-events-none"
+                style={{ top: "45%", left: "22%", boxShadow: `0 0 40px 20px ${theme.accent}` }}
+              />
+            )}
+
+            {/* 정방향 우측 고정식 오리지널 광부 개체 */}
+            <button
+              type="button"
+              onClick={handleStrike}
+              disabled={phase !== "idle"}
+              className="absolute right-4 bottom-6 z-10 cursor-pointer outline-none disabled:cursor-default"
+            >
+              {phase === "idle" && (
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap font-black text-[9px] text-white/80 px-2.5 py-
