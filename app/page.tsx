@@ -86,51 +86,49 @@ function getThemeByRound(round: number): MineTheme {
 }
 
 // ==========================================
-// 2. 가변형 16x16 도트 데이터 (광석 대기형 및 파쇄 잔해형 분리)
+// 2. 가변형 16x16 도트 데이터 (클러스터 기반 원석 및 보석 개화 맵)
 // ==========================================
-// [수술 반영]: 마름모를 완전히 탈피하여 실제 울퉁불퉁한 자연석 광석에 가깝게 리디자인한 픽셀 맵
 const ORE_PIXEL_MAP = [
   [0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0],
   [0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0],
   [0,0,1,1,1,1,1,1,1,2,2,1,1,1,0,0],
-  [0,1,1,1,1,2,2,2,2,2,2,2,1,1,1,0],
-  [0,1,1,1,2,2,2,2,2,2,2,2,2,1,1,0],
-  [1,1,1,1,2,2,2,2,2,2,2,2,2,1,1,1],
-  [1,1,1,2,2,2,2,2,2,2,2,2,1,1,1,1],
-  [1,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1],
-  [0,1,1,1,2,2,2,2,1,1,1,1,1,1,1,0],
-  [0,1,1,1,1,2,2,1,1,1,1,1,1,1,1,0],
-  [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
-  [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
-  [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+  [0,1,1,1,1,1,2,2,2,2,1,1,1,1,1,0],
+  [1,1,1,1,1,2,2,2,2,2,1,1,1,0,0,0],
+  [1,1,1,1,1,2,2,2,2,2,1,1,1,1,0,0],
+  [1,1,1,1,1,1,2,2,2,1,1,1,1,1,0,0],
+  [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+  [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+  [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+  [0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0],
+  [0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0],
   [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
   [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 ]
 
-// [주문 명세]: SUCCESS 글자를 대체하여 3타 타격 시 노출될 완전히 부서진 광석의 사방 비산 잔해 픽셀 맵
-const RUIN_PIXEL_MAP = [
+const GEM_PIXEL_MAP = [
+  [0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0],
+  [0,0,0,0,2,2,2,2,2,2,0,0,0,0,0,0],
+  [0,0,0,2,2,2,2,2,2,2,2,0,0,0,0,0],
+  [0,0,2,2,2,2,2,2,2,2,2,2,0,0,0,0],
+  [0,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0],
+  [0,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0],
+  [0,0,2,2,2,2,2,2,2,2,2,2,0,0,0,0],
+  [0,0,0,2,2,2,1,1,2,2,2,0,0,0,0,0],
+  [0,1,0,0,2,2,1,1,2,2,0,0,1,0,0],
+  [1,1,1,0,0,2,2,2,2,0,0,1,1,1,0],
+  [0,1,1,0,0,0,0,2,2,0,0,0,0,1,1,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0],
-  [0,1,2,0,0,0,1,1,1,0,0,0,0,2,1,0],
-  [0,0,0,0,0,1,1,2,2,1,0,0,0,0,0,0],
-  [0,0,0,0,1,1,2,2,2,1,1,0,0,0,0,0],
-  [0,0,0,0,1,2,2,0,0,2,1,0,0,0,0,0],
-  [0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0],
-  [0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0],
-  [1,1,2,1,0,0,0,0,0,0,0,0,1,2,1,1],
-  [0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0],
-  [0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0],
-  [0,0,0,0,1,2,2,0,0,2,1,0,0,0,0,0],
-  [0,0,0,0,1,1,2,2,2,1,1,0,0,0,0,0],
-  [0,0,0,0,0,1,1,2,2,1,0,0,0,0,0,0],
-  [0,1,1,0,0,0,1,1,1,0,0,0,0,1,1,0],
+  [0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 ]
 
 function PurePixelMatrixOre({ config, crackLevel }: { config: ThemeConfig; crackLevel: number }) {
-  // [수술 반영]: crackLevel === 3 상태일 때 SUCCESS 글자를 즉각 증발시키고 부서진 픽셀 잔해 데이터 드로잉
-  const activeMap = crackLevel === 3 ? RUIN_PIXEL_MAP : ORE_PIXEL_MAP
+  // 3타 도킹 완료 시 순수 보석 클러스터로 외형 동적 스위칭
+  const activeMap = crackLevel === 3 ? GEM_PIXEL_MAP : ORE_PIXEL_MAP
 
   return (
     <div 
@@ -140,8 +138,8 @@ function PurePixelMatrixOre({ config, crackLevel }: { config: ThemeConfig; crack
         gridTemplateRows: "repeat(16, minmax(0, 1fr))",
         imageRendering: "pixelated"
       }}
-      className={`w-16 h-16 bg-transparent select-none p-0.5 transition-all ${
-        crackLevel === 3 ? "scale-110 opacity-60 animate-pulse" : "scale-100 opacity-100"
+      className={`w-16 h-16 bg-transparent select-none p-0.5 transition-all duration-300 ${
+        crackLevel === 3 ? "scale-110 drop-shadow-[0_0_10px_rgba(255,255,255,0.6)]" : "scale-100"
       }`}
     >
       {activeMap.flatMap((row, rIdx) => 
@@ -204,7 +202,6 @@ function generateChaosStandardLottoRows(round: number, count: number): LootRowDa
 
     mainNumbers.sort((a, b) => a - b)
 
-    // 표준편차 검증 필터
     const sum = mainNumbers.reduce((acc, curr) => acc + curr, 0)
     if (sum < 105 || sum > 175) {
       baseSeed += 17 
@@ -318,7 +315,7 @@ function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: numb
 }
 
 // ==========================================
-// 6. 메인 코어 스테이지 디바이스
+// 6. 메인 코어 스테이지 가변 모바일 디바이스
 // ==========================================
 const SPECK_POS = [
   { top: "10%", left: "14%" },
@@ -346,7 +343,6 @@ export default function Page() {
   }, [])
 
   useEffect(() => {
-    // 로또 최초 기준일 기반 자동 동기화 가동
     const baseDate = new Date("2002-12-07T21:00:00")
     const today = new Date()
     const diffMs = today.getTime() - baseDate.getTime()
@@ -401,8 +397,15 @@ export default function Page() {
   const rockTransformStyle = strikeMotion === "hit" ? "scale(0.90) translate(-2px, 2px)" : "scale(1)"
 
   return (
-    <main className="min-h-[100dvh] w-full bg-[#1e202c] flex items-center justify-center overflow-hidden font-mono select-none">
-      <div className="relative h-[100dvh] w-full max-w-[440px] overflow-hidden bg-[#0c0d14] flex items-center justify-center p-4">
+    <main className="min-h-[100dvh] w-full bg-[#1e202c] flex items-center justify-center overflow-y-auto font-mono select-none py-6">
+      {/* [주문 명세]: 숫자 표출 전(idle, striking) 상태일 때는 기존의 80% 스케일(h-[80dvh])로 자동 차단 및 압축 격리 */}
+      <div 
+        style={{ transition: "height 0.4s cubic-bezier(0.16, 1, 0.3, 1)" }}
+        className={`relative w-full max-w-[440px] overflow-hidden bg-[#0c0d14] flex items-center justify-center p-4 transition-all ${
+          isResults ? "h-[100dvh]" : "h-[78dvh]"
+        }`}
+      >
+        
         <div className="relative border-4 flex w-full max-w-[360px] flex-col overflow-hidden rounded-md transition-all duration-150" style={{ background: theme.caveBg, borderColor: theme.accent, boxShadow: `0 0 24px 4px ${theme.accent}33`, imageRendering: "pixelated" }}>
           
           <div className="flex items-center justify-between border-b-4 px-3 py-2 text-[10px] text-white" style={{ background: theme.caveDeep, borderColor: theme.accent }}>
@@ -458,7 +461,7 @@ export default function Page() {
           </div>
 
           {isResults && (
-            <div className="flex flex-col bg-[#05060a] border-t-4" style={{ borderColor: theme.accent }}>
+            <div className="flex flex-col bg-[#05060a] border-t-4 animate-fadeIn" style={{ borderColor: theme.accent }}>
               <div className="flex items-center justify-between px-3 py-1.5 font-mono text-[8px] text-gray-500">
                 <span>CHAOS MATRIX HAUL (10 ROWS)</span>
                 <span style={{ color: theme.accent }}>2ND TARGET INJECTED</span>
