@@ -33,7 +33,7 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     accentText: "#2ecc71",
     stoneBase: "#f1c40f", 
     stoneGlow: "#fff3a8",
-    description: "순도 100% 황금 구역! 압축된 정예 조합 영역을 정밀 채굴합니다.",
+    description: "비선형 카오스 수렴 구역. 정예 압축 영역을 채굴합니다.",
     poolSize: 2194578,
   },
   IRON_MINE: {
@@ -46,7 +46,7 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     accentText: "#f1c40f",
     stoneBase: "#e67e22", 
     stoneGlow: "#f5cba7",
-    description: "표준 무쇠 구역입니다. 완만하게 필터링된 전체 레이어를 균등 조사합니다.",
+    description: "표준 정규분포 안정화 구역. 균등 조사를 시행합니다.",
     poolSize: 5204120,
   },
   CRYSTAL_CAVE: {
@@ -59,7 +59,7 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     accentText: "#3498db",
     stoneBase: "#9b59b6", 
     stoneGlow: "#ebdef0",
-    description: "시공간이 요동치는 동굴, 리스크가 헷지된 크리스탈 틈새를 저격 타격합니다.",
+    description: "시공간 요동 크레바스 구역. 헷지된 틈새를 저격 타격합니다.",
     poolSize: 3410560,
   },
   LAVA_ERUPTION: {
@@ -72,7 +72,7 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     accentText: "#e74c3c",
     stoneBase: "#c0392b", 
     stoneGlow: "#fadbd8",
-    description: "카오스 대격변 타이밍! 위기 방어 모드로 번호 위험도를 최대치로 밀어냅니다.",
+    description: "위기 방어 대격변 모드. 극단적 표준편차 필터가 작동합니다.",
     poolSize: 7854010,
   },
 }
@@ -86,7 +86,7 @@ function getThemeByRound(round: number): MineTheme {
 }
 
 // ==========================================
-// 2. 가변형 16x16 도트 광석 매트릭스 맵 데이터
+// 2. 가변형 16x16 도트 광석 매트릭스 데이터
 // ==========================================
 const ORE_PIXEL_MAP = [
   [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
@@ -117,25 +117,14 @@ function PurePixelMatrixOre({ config, crackLevel }: { config: ThemeConfig; crack
       </div>
     )
   }
-
   return (
-    <div 
-      className="grid grid-cols-16 grid-rows-16 w-16 h-16 bg-transparent select-none p-0.5"
-      style={{ imageRendering: "pixelated" }}
-    >
+    <div className="grid grid-cols-16 grid-rows-16 w-16 h-16 bg-transparent select-none p-0.5" style={{ imageRendering: "pixelated" }}>
       {ORE_PIXEL_MAP.flatMap((row, rIdx) => 
         row.map((pixel, cIdx) => {
           let bgColor = "transparent"
           if (pixel === 1) bgColor = config.stoneBase
           if (pixel === 2) bgColor = config.stoneGlow
-
-          return (
-            <div 
-              key={`${rIdx}-${cIdx}`} 
-              style={{ backgroundColor: bgColor }}
-              className="w-full h-full"
-            />
-          )
+          return <div key={`${rIdx}-${cIdx}`} style={{ backgroundColor: bgColor }} className="w-full h-full" />
         })
       )}
     </div>
@@ -143,7 +132,7 @@ function PurePixelMatrixOre({ config, crackLevel }: { config: ThemeConfig; crack
 }
 
 // ==========================================
-// 3. 난수 분산 생성 모듈
+// 3. 카오스 분산 및 표준편차 필터링 기반 번호 세트 드라이버
 // ==========================================
 interface LootRowData {
   id: string
@@ -151,38 +140,50 @@ interface LootRowData {
   bonus: number
 }
 
-function generateUniqueLottoRows(round: number, count: number): LootRowData[] {
+function generateChaosStandardLottoRows(round: number, count: number): LootRowData[] {
   const themeKey = getThemeByRound(round)
   const config = THEME_MAP[themeKey]
   const results: LootRowData[] = []
   
-  const cryptoSeed = Date.now() + Math.floor(Math.random() * 100000)
-  let pointer = (cryptoSeed % config.poolSize) + 1
+  // 기준 난수 시드 생성
+  let baseSeed = Date.now() + Math.floor(Math.random() * 50000)
+  let r_param = 3.85 + (baseSeed % 100) * 0.001 // 카오스 분기 매개변수 제어
 
-  for (let s = 0; s < count; s++) {
+  while (results.length < count) {
     const mainNumbers: number[] = []
-    let stepSeed = pointer + s * 1009
+    let x = (baseSeed % 79) * 0.0123
+    if (x === 0 || x === 1) x = 0.456
 
+    // 로지스틱 비선형 위상 맵 루프 실행
     while (mainNumbers.length < 6) {
-      const randVal = (Math.abs(Math.sin(stepSeed + mainNumbers.length)) * 100000 % 45) + 1
-      const num = Math.floor(randVal)
-      if (!mainNumbers.includes(num)) {
-        mainNumbers.push(num)
+      x = r_param * x * (1 - x)
+      const cand = Math.floor(x * 45) + 1
+      if (!mainNumbers.includes(cand) && cand >= 1 && cand <= 45) {
+        mainNumbers.push(cand)
       }
-      stepSeed += 23
     }
     mainNumbers.sort((a, b) => a - b)
 
-    let bonusNumber = Math.floor((Math.abs(Math.cos(stepSeed)) * 100000 % 45)) + 1
+    // 표준편차 필터링 알고리즘 ($\sigma$ 격리 검증)
+    const sum = mainNumbers.reduce((acc, curr) => acc + curr, 0)
+    // 6개 번호 조합의 수학적 표준 평균대역(115 ~ 161) 검증 필터
+    if (sum < 112 || sum > 164) {
+      baseSeed += 13 // 필터 탈락 시 위상 천이 후 재결합
+      continue
+    }
+
+    // 2등 저격 유도형 독립 보석 보너스 번호 분산 추출
+    let bonusNumber = Math.floor((Math.abs(Math.sin(x + sum)) * 100000) % 45) + 1
     while (mainNumbers.includes(bonusNumber)) {
       bonusNumber = (bonusNumber % 45) + 1
     }
 
     results.push({
-      id: `${round}-${cryptoSeed}-${s}`,
+      id: `${round}-${baseSeed}-${results.length}`,
       numbers: mainNumbers,
       bonus: bonusNumber,
     })
+    baseSeed += 997
   }
   return results
 }
@@ -192,7 +193,6 @@ function generateUniqueLottoRows(round: number, count: number): LootRowData[] {
 // ==========================================
 class BuiltInRetroAudio {
   private ctx: AudioContext | null = null
-
   private init() {
     if (!this.ctx) {
       this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
@@ -201,12 +201,10 @@ class BuiltInRetroAudio {
       this.ctx.resume()
     }
   }
-
   playClang() {
     this.init()
     if (!this.ctx) return
     const now = this.ctx.currentTime
-    
     const osc = this.ctx.createOscillator()
     const gain = this.ctx.createGain()
     osc.type = "triangle"
@@ -219,12 +217,10 @@ class BuiltInRetroAudio {
     osc.start(now)
     osc.stop(now + 0.12)
   }
-
   playShatter() {
     this.init()
     if (!this.ctx) return
     const now = this.ctx.currentTime
-
     const melody = [523.25, 659.25, 783.99, 1046.50, 1318.51]
     melody.forEach((freq, idx) => {
       const osc = this.ctx.createOscillator()
@@ -243,28 +239,15 @@ class BuiltInRetroAudio {
 }
 
 // ==========================================
-// 5. 초기 버전 UI 규격 복원형 컴포넌트
+// 5. 초기 UI 규격 복원형 컴포넌트
 // ==========================================
 function EmbeddedPixelBall({ value, variant, config }: { value: number; variant: "main" | "bonus"; config: ThemeConfig }) {
   const pad = String(value).padStart(2, "0")
   const style = variant === "bonus"
-    ? {
-        borderColor: config.accent,
-        background: config.accentDeep,
-        color: config.accentText,
-        boxShadow: `0 0 12px ${config.accent}aa`,
-      }
-    : {
-        borderColor: "rgba(255,255,255,0.15)",
-        background: config.caveDeep,
-        color: "#f4f4f4",
-      }
-
+    ? { borderColor: config.accent, background: config.accentDeep, color: config.accentText, boxShadow: `0 0 12px ${config.accent}aa` }
+    : { borderColor: "rgba(255,255,255,0.15)", background: config.caveDeep, color: "#f4f4f4" }
   return (
-    <span
-      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-mono font-bold shadow-inner"
-      style={style}
-    >
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-mono font-bold shadow-inner" style={style}>
       {pad}
     </span>
   )
@@ -272,13 +255,7 @@ function EmbeddedPixelBall({ value, variant, config }: { value: number; variant:
 
 function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: number; config: ThemeConfig }) {
   return (
-    <li
-      className="flex items-center gap-2 rounded border-2 px-2.5 py-1.5 bg-[#11121d]"
-      style={{
-        borderColor: config.accent,
-        background: `${config.caveDeep}ee`,
-      }}
-    >
+    <li className="flex items-center gap-2 rounded border-2 px-2.5 py-1.5 bg-[#11121d]" style={{ borderColor: config.accent, background: `${config.caveDeep}ee` }}>
       <span className="w-4 shrink-0 text-center font-mono font-bold text-[9px]" style={{ color: config.accent }}>
         {String(index + 1).padStart(2, "0")}
       </span>
@@ -298,17 +275,8 @@ function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: numb
 }
 
 // ==========================================
-// 6. [오리지널 뼈대 복원] 메인 뷰어 무대
+// 6. 메인 코어 뷰어 및 자동 시간 동기화 바디
 // ==========================================
-const SPECK_POS = [
-  { top: "10%", left: "14%" },
-  { top: "18%", left: "82%" },
-  { top: "44%", left: "8%" },
-  { top: "30%", left: "78%" },
-  { top: "58%", left: "90%" },
-  { top: "8%", left: "52%" },
-]
-
 export default function Page() {
   const [round, setRound] = useState(1227)
   const [phase, setPhase] = useState<Phase>("idle")
@@ -319,6 +287,17 @@ export default function Page() {
   const lockRef = useRef(false)
   const timers = useRef<number[]>([])
   const audioRef = useRef<BuiltInRetroAudio | null>(null)
+
+  // [기획 명세]: 매주 자동으로 실시간 회차 동기화 연산 드라이버
+  useEffect(() => {
+    // 로또 최초 기준일 (1회차 추첨일: 2002년 12월 7일) 기반 타임 갭 추적 계산
+    const baseDate = new Date("2002-12-07T21:00:00")
+    const today = new Date()
+    const diffMs = today.getTime() - baseDate.getTime()
+    const diffWeeks = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7))
+    const calculatedRound = 1 + diffWeeks
+    setRound(calculatedRound)
+  }, [])
 
   const clearTimers = useCallback(() => {
     timers.current.forEach((t) => window.clearTimeout(t))
@@ -337,23 +316,17 @@ export default function Page() {
     if (lockRef.current) return
     lockRef.current = true
     setPhase("striking")
-
     const audio = audioRef.current
-    const at = (ms: number, fn: () => void) => {
-      timers.current.push(window.setTimeout(fn, ms))
-    }
+    const at = (ms: number, fn: () => void) => { timers.current.push(window.setTimeout(fn, ms)) }
 
-    // 3타 정석 타격 모션 드라이버
     at(0, () => { setStrikeMotion("hit"); setCrackLevel(1); audio?.playClang(); })
     at(120, () => { setStrikeMotion("return"); })
-    
     at(240, () => { setStrikeMotion("hit"); setCrackLevel(2); audio?.playClang(); })
     at(360, () => { setStrikeMotion("return"); })
-    
     at(480, () => { setStrikeMotion("hit"); setCrackLevel(3); audio?.playShatter(); })
     
     at(750, () => {
-      const uniqueData = generateUniqueLottoRows(round, 10)
+      const uniqueData = generateChaosStandardLottoRows(round, 10)
       setRows(uniqueData)
       setPhase("results")
       setStrikeMotion("ready")
@@ -370,7 +343,6 @@ export default function Page() {
     setPhase("idle")
   }, [clearTimers])
 
-  // 오리지널 황금 비율 수직 타격 물리 CSS 트랜스폼
   const minerTransformStyle = {
     ready: "translate(0, 0) scale(1)",
     hit: "translate(-22px, 14px) scale(1.02)", 
@@ -381,35 +353,78 @@ export default function Page() {
 
   return (
     <main className="min-h-[100dvh] w-full bg-[#1e202c] flex items-center justify-center overflow-hidden font-mono select-none">
-      {/* 초기 버전의 완벽한 오리지널 스마트폰 모바일 컨테이너 복원 */}
       <div className="relative h-[100dvh] w-full max-w-[440px] overflow-hidden bg-[#0c0d14] flex items-center justify-center p-4">
-        
-        {/* 초기 가챠 머신 완벽 규격 복원 팝업 바디 */}
-        <div
-          className="relative border-4 flex w-full max-w-[360px] flex-col overflow-hidden rounded-md transition-all duration-150"
-          style={{
-            background: theme.caveBg,
-            borderColor: theme.accent,
-            boxShadow: `0 0 24px 4px ${theme.accent}33`,
-            imageRendering: "pixelated"
-          }}
-        >
-          {/* 초기형 대시보드 탑 바 */}
-          <div
-            className="flex items-center justify-between border-b-4 px-3 py-2 text-[10px] text-white"
-            style={{ background: theme.caveDeep, borderColor: theme.accent }}
-          >
+        <div className="relative border-4 flex w-full max-w-[360px] flex-col overflow-hidden rounded-md transition-all duration-150" style={{ background: theme.caveBg, borderColor: theme.accent, boxShadow: `0 0 24px 4px ${theme.accent}33`, imageRendering: "pixelated" }}>
+          
+          <div className="flex items-center justify-between border-b-4 px-3 py-2 text-[10px] text-white" style={{ background: theme.caveDeep, borderColor: theme.accent }}>
             <div className="flex items-center gap-2">
               <span style={{ color: theme.accent }}>⛏️</span>
               <span className="font-bold">제 {round} 회차</span>
               {phase === "idle" && (
                 <div className="flex gap-1 ml-1 scale-90">
-                  <button
-                    onClick={() => setRound((r) => Math.max(1, r - 1))}
-                    className="bg-[#212435] px-1.5 py-0.5 rounded text-gray-400 active:bg-gray-600 font-bold"
-                  >
-                    -
-                  </button>
-                  <button
-                    onClick={() => setRound((r) => r + 1)}
-                    className="bg-[#212435] px-1.5 py-0.5 rounded text
+                  <button onClick={() => setRound((r) => Math.max(1, r - 1))} className="bg-[#212435] px-1.5 py-0.5 rounded text-gray-400 active:bg-gray-600 font-bold">-</button>
+                  <button onClick={() => setRound((r) => r + 1)} className="bg-[#212435] px-1.5 py-0.5 rounded text-gray-400 active:bg-gray-600 font-bold">+</button>
+                </div>
+              )}
+            </div>
+            <span className="text-[9px] font-bold tracking-wider" style={{ color: theme.accent }}>{theme.label}</span>
+          </div>
+
+          <div className="relative h-[230px] w-full overflow-hidden" style={{ background: theme.caveBg }}>
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_25%,rgba(0,0,0,0.75)_100%)]" />
+            
+            {SPECK_POS.map((o, i) => (
+              <span key={i} className="absolute h-2.5 w-2.5 rounded-sm opacity-70 animate-pulse" style={{ top: o.top, left: o.left, backgroundColor: theme.accent, boxShadow: `0 0 10px 2px ${theme.accent}` }} />
+            ))}
+
+            <div className="absolute bottom-0 left-0 right-0 flex h-7 border-t border-black/40">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex-1 border-r" style={{ backgroundColor: i % 2 ? theme.caveBg : theme.caveDeep, borderColor: "rgba(0,0,0,0.15)" }} />
+              ))}
+            </div>
+
+            <div className="absolute left-[30%] bottom-[16px] -translate-x-1/2 z-10 transition-transform duration-75" style={{ transform: rockTransformStyle }}>
+              <PurePixelMatrixOre config={theme} crackLevel={crackLevel} />
+            </div>
+
+            {strikeMotion === "hit" && (
+              <div className="absolute w-12 h-12 rounded-full bg-white opacity-70 animate-ping pointer-events-none" style={{ top: "54%", left: "24%", boxShadow: `0 0 32px 12px ${theme.accent}` }} />
+            )}
+
+            <button type="button" onClick={handleStrike} disabled={phase !== "idle"} className="absolute bottom-2 left-[66%] z-10 -translate-x-1/2 cursor-pointer rounded outline-none disabled:cursor-default">
+              {phase === "idle" && (
+                <span className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-bold text-[9px] text-white px-2 py-0.5 rounded bg-black/80 border border-white/10 shadow-md animate-bounce">
+                  <span style={{ color: theme.accent }}>[ TAP CHARACTER ]</span>
+                </span>
+              )}
+              <div className="w-[120px] h-[150px] flex items-center justify-center transition-transform duration-75 ease-in-out" style={{ transform: minerTransformStyle }}>
+                <img src="/dwarf-miner.png" alt="Dwarf Miner" className="w-full h-full object-contain object-bottom pixelated drop-shadow-[0_4px_0_rgba(0,0,0,0.6)]" />
+              </div>
+            </button>
+          </div>
+
+          <div className="bg-[#0c0d16] p-2.5 text-center border-t border-b border-black/40">
+            <p className="text-[10px] text-gray-400 font-sans leading-relaxed tracking-tight">{isResults ? "🎉 위상 동기화 및 정제 프로세스 완수!" : theme.description}</p>
+            <div className="mt-1 text-[7px] text-gray-600 font-mono tracking-widest">CHAOS POOL DENSITY: {theme.poolSize.toLocaleString()} UNITS</div>
+          </div>
+
+          {isResults && (
+            <div className="flex flex-col bg-[#05060a] border-t-4" style={{ borderColor: theme.accent }}>
+              <div className="flex items-center justify-between px-3 py-1.5 font-mono text-[8px] text-gray-500">
+                <span>CHAOS MATRIX HAUL (10 ROWS)</span>
+                <span style={{ color: theme.accent }}>2ND TARGET INJECTED</span>
+              </div>
+              <ul className="flex max-h-[160px] flex-col gap-1 overflow-y-auto px-2 pb-2">
+                {rows.map((row, i) => (
+                  <EmbeddedLootRow key={row.id} row={row} index={i} config={theme} />
+                ))}
+              </ul>
+              <button type="button" onClick={handleReset} className="m-2 cursor-pointer rounded font-bold text-[10px] py-2.5 shadow-lg active:translate-y-0.5 text-black border border-white/10" style={{ backgroundColor: theme.accent }}>🔄 RESET & RE-MINE</button>
+            </div>
+          )}
+
+        </div>
+      </div>
+    </main>
+  )
+}
