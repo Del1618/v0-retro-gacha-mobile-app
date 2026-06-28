@@ -86,14 +86,46 @@ function getThemeByRound(round: number): MineTheme {
 }
 
 // ==========================================
-// 2. 시나리오 A: 고해상도 이미지 자산 내부 주입 (Base64 Data URL)
+// 2. 고해상도 인라인 벡터 자산 제어 컴포넌트 (1.5배 규격 자동 격리)
 // ==========================================
-// 대기 및 타격 상태의 고해상도 광석 이미지 (기존 업로드 파일 데이터 커스텀 래핑)
-const ORE_IMAGE_BASE64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCADwAPADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAER/9oADAMBAAIRAxEAPwChgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//Z"
+function VectorOreCore({ config, crackLevel, isShock }: { config: ThemeConfig; crackLevel: number; isShock: boolean }) {
+  // 사용자가 제공한 원본 이미지의 구형 원형 구조를 완벽하게 투영하는 정밀 벡터 선언
+  const glowColor = isShock ? "#ffffff" : config.stoneGlow
+  const baseColor = config.stoneBase
 
-// 3타 격파 후 상태의 보석 코어 + 주변 광채 강화 전용 이미지 (1.5배 크기 유지 스펙)
-const GEM_SHATTER_BASE64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCADwAPADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAER/9oADAMBAAIRAxEAPwChgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//Z"
+  if (crackLevel === 3) {
+    // 3타 격파 후 상태: 코어 유지 및 주변에 증폭된 사방 광채 파티클 패스 레이어 작동
+    return (
+      <svg className="w-24 h-24 transition-all duration-300 animate-pulse" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="28" fill={baseColor} opacity="0.15" />
+        <path d="M50 15 L50 5 M50 85 L50 95 M15 50 L5 50 M85 50 L95 50 M25 25 L15 15 M75 75 L85 85 M25 75 L15 85 M75 25 L85 15" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" opacity="0.9" />
+        <path d="M50 22 C34.5 22 22 34.5 22 50 C22 65.5 34.5 78 50 78 C65.5 78 78 65.5 78 50 C78 34.5 65.5 22 50 22Z" fill={baseColor} />
+        <path d="M50 30 C39 30 30 39 30 50 C30 61 39 70 50 70 C61 70 70 61 70 50 C70 39 61 30 50 30Z" fill={glowColor} />
+        <circle cx="44" cy="42" r="6" fill="#ffffff" />
+      </svg>
+    )
+  }
 
+  // 대기 및 타격 중인 상태: 원본 이미지 고유의 어두운 바위 경계면과 내부 중심 하이라이트 형태 보존
+  return (
+    <svg className="w-24 h-24 transition-all duration-75" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 12 C29 12 12 29 12 50 C12 71 29 88 50 88 C71 88 88 71 88 50 C88 29 71 12 50 12Z" fill="#1b1c22" stroke="#101115" strokeWidth="2" />
+      <path d="M50 18 C32.3 18 18 32.3 18 50 C18 67.7 32.3 82 50 82 C67.7 82 82 67.7 82 50 C82 32.3 67.7 18 50 18Z" fill={baseColor} />
+      <path d="M50 26 C36.7 26 26 36.7 26 50 C26 63.3 36.7 74 50 74 C63.3 74 74 63.3 74 50 C74 36.7 63.3 26 50 26Z" fill={glowColor} />
+      <circle cx="42" cy="40" r="8" fill="#ffffff" opacity="0.9" />
+      {crackLevel > 0 && (
+        <path d="M35 35 L45 55 L65 45 M50 22 L55 38 L48 68" stroke="#101115" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+      )}
+      {crackLevel > 1 && (
+        <path d="M68 32 L52 48 L58 75 M25 52 L42 48 L62 65" stroke="#101115" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+      )}
+    </svg>
+  )
+}
+
+// ==========================================
+// 3. 백엔드 수학 연산 및 인터페이스 데이터 정의
+// ==========================================
 interface LootRowData {
   id: string
   numbers: number[]
@@ -244,6 +276,9 @@ const SPECK_POS = [
   { top: "40%", left: "92%" }, { top: "85%", left: "25%" }
 ]
 
+// ==========================================
+// 4. 메인 어플리케이션 컴포넌트 뷰어컨테이너
+// ==========================================
 export default function LotteryMatrixApp() {
   const [currentRound, setCurrentRound] = useState<number>(1215)
   const [phase, setPhase] = useState<Phase>("idle")
@@ -299,12 +334,12 @@ export default function LotteryMatrixApp() {
 
   const isResults = phase === "results"
 
-  // 크랙 단계 또는 도출 결과에 기반해 동적 CSS 필터 이펙트 연산
+  // 인라인 벡터의 동적 필터 이펙트 매핑 알고리즘
   const dynamicFilter = isShock 
-    ? `brightness(1.6) drop-shadow(0 0 25px ${theme.stoneGlow})` 
+    ? `brightness(1.7) drop-shadow(0 0 30px #ffffff)` 
     : crackLevel === 3 
-      ? `drop-shadow(0 0 30px #ffffff)` 
-      : `drop-shadow(0 0 12px ${theme.stoneBase}55)`
+      ? `drop-shadow(0 0 35px ${theme.stoneGlow}) drop-shadow(0 0 15px #ffffff)` 
+      : `drop-shadow(0 0 14px ${theme.stoneBase}66)`
 
   return (
     <main style={{ backgroundColor: "#040508" }} className="flex min-h-screen w-full items-center justify-center p-4 antialiased font-sans">
@@ -346,20 +381,15 @@ export default function LotteryMatrixApp() {
               onClick={handleStrike}
               style={{ 
                 outline: "none",
-                transform: isShock ? "scale(0.88)" : "scale(1.0)",
+                transform: isShock ? "scale(0.86)" : "scale(1.0)",
               }}
               className={`group relative flex items-center justify-center rounded-2xl border border-white/5 bg-black/20 p-6 transition-all duration-75 ${
                 isResults ? "cursor-default" : "cursor-pointer hover:bg-black/40"
               }`}
             >
-              <div className="relative z-10">
-                {/* 시나리오 A 고해상도 이미지 자산 독립 렌더링 노드 (w-24, h-24 1.5배 규격 자동 격리) */}
-                <img 
-                  src={crackLevel === 3 ? GEM_SHATTER_BASE64 : ORE_IMAGE_BASE64}
-                  alt="Mining Target Core"
-                  style={{ filter: dynamicFilter }}
-                  className="w-24 h-24 object-contain select-none transition-all duration-200 pointer-events-none"
-                />
+              <div className="relative z-10" style={{ filter: dynamicFilter }}>
+                {/* 1.5배 유지 조건이 결합된 인라인 정밀 그래픽 레이어 */}
+                <VectorOreCore config={theme} crackLevel={crackLevel} isShock={isShock} />
               </div>
             </button>
           </div>
