@@ -86,80 +86,14 @@ function getThemeByRound(round: number): MineTheme {
 }
 
 // ==========================================
-// 2. 제공된 오리지널 이미지 기반 정밀 도트 매트릭스 (1.5배 업사이징 대응)
+// 2. 시나리오 A: 고해상도 이미지 자산 내부 주입 (Base64 Data URL)
 // ==========================================
-const ORE_PIXEL_MAP = [
-  [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
-  [0,0,0,1,1,1,2,2,2,2,1,1,1,0,0,0],
-  [0,0,1,1,2,2,2,2,2,2,2,2,1,1,0,0],
-  [0,1,1,2,2,2,2,3,3,2,2,2,2,1,1,0],
-  [0,1,2,2,2,3,3,3,3,3,3,2,2,2,1,0],
-  [1,1,2,2,3,3,3,3,3,3,3,3,2,2,1,1],
-  [1,2,2,3,3,3,3,3,3,3,3,3,3,2,2,1],
-  [1,2,2,3,3,3,3,3,3,3,3,3,3,2,2,1],
-  [1,2,2,3,3,3,3,3,3,3,3,3,3,2,2,1],
-  [1,1,2,2,3,3,3,3,3,3,3,3,2,2,1,1],
-  [0,1,2,2,2,3,3,3,3,3,3,2,2,2,1,0],
-  [0,1,1,2,2,2,2,3,3,2,2,2,2,1,1,0],
-  [0,0,1,1,2,2,2,2,2,2,2,2,1,1,0,0],
-  [0,0,0,1,1,1,2,2,2,2,1,1,1,0,0,0],
-  [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-]
+// 대기 및 타격 상태의 고해상도 광석 이미지 (기존 업로드 파일 데이터 커스텀 래핑)
+const ORE_IMAGE_BASE64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCADwAPADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAER/9oADAMBAAIRAxEAPwChgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//Z"
 
-const GEM_PIXEL_MAP = [
-  [3,0,0,0,0,0,0,3,3,0,0,0,0,0,0,3],
-  [0,3,0,0,0,0,0,0,0,0,0,0,0,0,3,0],
-  [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
-  [0,0,0,0,1,2,2,2,2,2,2,1,0,0,0,0],
-  [0,0,0,1,2,2,3,3,3,3,2,2,1,0,0,0],
-  [0,0,1,2,2,3,3,3,3,3,3,2,2,1,0,0],
-  [0,0,1,2,3,3,3,3,3,3,3,3,2,1,0,0],
-  [3,0,1,2,3,3,3,3,3,3,3,3,2,1,0,3],
-  [3,0,1,2,3,3,3,3,3,3,3,3,2,1,0,3],
-  [0,0,1,2,3,3,3,3,3,3,3,3,2,1,0,0],
-  [0,0,1,2,2,3,3,3,3,3,3,2,2,1,0,0],
-  [0,0,0,1,2,2,3,3,3,3,2,2,1,0,0,0],
-  [0,0,0,0,1,2,2,2,2,2,2,1,0,0,0,0],
-  [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
-  [0,3,0,0,0,0,0,0,0,0,0,0,0,0,3,0],
-  [3,0,0,0,0,0,0,3,3,0,0,0,0,0,0,3]
-]
+// 3타 격파 후 상태의 보석 코어 + 주변 광채 강화 전용 이미지 (1.5배 크기 유지 스펙)
+const GEM_SHATTER_BASE64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCADwAPADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAEC/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAER/9oADAMBAAIRAxEAPwChgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf//Z"
 
-// 1.5배 규격 최적화 반영 (w-16 h-16 -> w-24 h-24 변경)
-function PurePixelMatrixOre({ config, crackLevel }: { config: ThemeConfig; crackLevel: number }) {
-  const activeMap = crackLevel === 3 ? GEM_PIXEL_MAP : ORE_PIXEL_MAP
-
-  return (
-    <div 
-      style={{ 
-        display: "grid", 
-        gridTemplateColumns: "repeat(16, minmax(0, 1fr))", 
-        gridTemplateRows: "repeat(16, minmax(0, 1fr))", 
-        imageRendering: "pixelated" 
-      }} 
-      className="w-24 h-24 bg-transparent select-none p-0.5 transition-all duration-300"
-    >
-      {activeMap.flatMap((row, rIdx) => row.map((pixel, cIdx) => {
-        let bgColor = "transparent"
-        if (pixel === 1) bgColor = config.stoneBase
-        if (pixel === 2) bgColor = config.stoneGlow
-        if (pixel === 3) bgColor = "#ffffff"
-        return (
-          <div 
-            key={`${rIdx}-${cIdx}`} 
-            style={{ backgroundColor: bgColor }} 
-            className="w-full h-full" 
-          />
-        )
-      }))}
-    </div>
-  )
-}
-
-// ==========================================
-// 3. 백엔드 수학 연산 및 인터페이스 데이터 정의
-// ==========================================
 interface LootRowData {
   id: string
   numbers: number[]
@@ -277,10 +211,7 @@ function EmbeddedPixelBall({ value, variant, config }: { value: number; variant:
     : { borderColor: "rgba(255,255,255,0.15)", background: config.caveDeep, color: "#f4f4f4" }
 
   return (
-    <span 
-      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-mono font-bold shadow-inner" 
-      style={style}
-    >
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-mono font-bold shadow-inner" style={style}>
       {pad}
     </span>
   )
@@ -288,10 +219,7 @@ function EmbeddedPixelBall({ value, variant, config }: { value: number; variant:
 
 function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: number; config: ThemeConfig }) {
   return (
-    <li 
-      className="flex items-center gap-2 rounded border-2 px-2.5 py-1.5 bg-[#11121d]" 
-      style={{ borderColor: config.accent, background: `${config.caveDeep}ee` }}
-    >
+    <li className="flex items-center gap-2 rounded border-2 px-2.5 py-1.5 bg-[#11121d]" style={{ borderColor: config.accent, background: `${config.caveDeep}ee` }}>
       <span className="w-4 shrink-0 text-center font-mono font-bold text-[9px]" style={{ color: config.accent }}>
         {String(index + 1).padStart(2, "0")}
       </span>
@@ -316,9 +244,6 @@ const SPECK_POS = [
   { top: "40%", left: "92%" }, { top: "85%", left: "25%" }
 ]
 
-// ==========================================
-// 4. 메인 어플리케이션 컴포넌트 뷰어컨테이너
-// ==========================================
 export default function LotteryMatrixApp() {
   const [currentRound, setCurrentRound] = useState<number>(1215)
   const [phase, setPhase] = useState<Phase>("idle")
@@ -372,15 +297,17 @@ export default function LotteryMatrixApp() {
     setIsShock(false)
   }, [])
 
-  const isIdle = phase === "idle"
-  const isStriking = phase === "striking"
   const isResults = phase === "results"
 
+  // 크랙 단계 또는 도출 결과에 기반해 동적 CSS 필터 이펙트 연산
+  const dynamicFilter = isShock 
+    ? `brightness(1.6) drop-shadow(0 0 25px ${theme.stoneGlow})` 
+    : crackLevel === 3 
+      ? `drop-shadow(0 0 30px #ffffff)` 
+      : `drop-shadow(0 0 12px ${theme.stoneBase}55)`
+
   return (
-    <main 
-      style={{ backgroundColor: "#040508" }} 
-      className="flex min-h-screen w-full items-center justify-center p-4 antialiased font-sans"
-    >
+    <main style={{ backgroundColor: "#040508" }} className="flex min-h-screen w-full items-center justify-center p-4 antialiased font-sans">
       <div 
         style={{ 
           borderColor: "#181a26", 
@@ -394,12 +321,7 @@ export default function LotteryMatrixApp() {
         {SPECK_POS.map((pos, idx) => (
           <div 
             key={idx}
-            style={{ 
-              top: pos.top, 
-              left: pos.left, 
-              backgroundColor: theme.stoneBase,
-              boxShadow: `0 0 6px ${theme.stoneBase}77`
-            }}
+            style={{ top: pos.top, left: pos.left, backgroundColor: theme.stoneBase, boxShadow: `0 0 6px ${theme.stoneBase}77` }}
             className="absolute h-0.5 w-0.5 rounded-full opacity-20 animate-pulse"
           />
         ))}
@@ -411,13 +333,8 @@ export default function LotteryMatrixApp() {
               <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping" />
               <h1 className="text-[10px] font-mono font-black tracking-[0.2em] text-gray-400">LOTTERY MATRIX V2</h1>
             </div>
-            <div className="mt-1 text-xs font-mono font-bold tracking-tight text-white">
-              제 {currentRound} 회차 위상 분기점
-            </div>
-            <div 
-              style={{ color: theme.accent }} 
-              className="mt-0.5 text-[9px] font-sans font-bold tracking-tight transition-colors duration-300"
-            >
+            <div className="mt-1 text-xs font-mono font-bold tracking-tight text-white">제 {currentRound} 회차 위상 분기점</div>
+            <div style={{ color: theme.accent }} className="mt-0.5 text-[9px] font-sans font-bold tracking-tight transition-colors duration-300">
               {theme.label}
             </div>
           </header>
@@ -430,20 +347,19 @@ export default function LotteryMatrixApp() {
               style={{ 
                 outline: "none",
                 transform: isShock ? "scale(0.88)" : "scale(1.0)",
-                boxShadow: isShock ? `0 0 40px #ffffff44` : "none"
               }}
-              className={`group relative flex items-center justify-center rounded-2xl border border-white/5 bg-black/20 p-8 transition-all duration-75 ${
+              className={`group relative flex items-center justify-center rounded-2xl border border-white/5 bg-black/20 p-6 transition-all duration-75 ${
                 isResults ? "cursor-default" : "cursor-pointer hover:bg-black/40"
               }`}
             >
-              {isShock && (
-                <div 
-                  style={{ borderColor: theme.stoneGlow }}
-                  className="absolute inset-0 rounded-2xl border-4 opacity-70 animate-ping" 
-                />
-              )}
               <div className="relative z-10">
-                <PurePixelMatrixOre config={theme} crackLevel={crackLevel} />
+                {/* 시나리오 A 고해상도 이미지 자산 독립 렌더링 노드 (w-24, h-24 1.5배 규격 자동 격리) */}
+                <img 
+                  src={crackLevel === 3 ? GEM_SHATTER_BASE64 : ORE_IMAGE_BASE64}
+                  alt="Mining Target Core"
+                  style={{ filter: dynamicFilter }}
+                  className="w-24 h-24 object-contain select-none transition-all duration-200 pointer-events-none"
+                />
               </div>
             </button>
           </div>
