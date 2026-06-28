@@ -117,14 +117,31 @@ function PurePixelMatrixOre({ config, crackLevel }: { config: ThemeConfig; crack
       </div>
     )
   }
+
+  // [수술 반영]: 외부 Tailwind 환경 설정 파일 우회용 가로/세로 인라인 인젝션 명세
   return (
-    <div className="grid grid-cols-16 grid-rows-16 w-16 h-16 bg-transparent select-none p-0.5" style={{ imageRendering: "pixelated" }}>
+    <div 
+      style={{ 
+        display: "grid",
+        gridTemplateColumns: "repeat(16, minmax(0, 1fr))",
+        gridTemplateRows: "repeat(16, minmax(0, 1fr))",
+        imageRendering: "pixelated"
+      }}
+      className="w-16 h-16 bg-transparent select-none p-0.5"
+    >
       {ORE_PIXEL_MAP.flatMap((row, rIdx) => 
         row.map((pixel, cIdx) => {
           let bgColor = "transparent"
           if (pixel === 1) bgColor = config.stoneBase
           if (pixel === 2) bgColor = config.stoneGlow
-          return <div key={`${rIdx}-${cIdx}`} style={{ backgroundColor: bgColor }} className="w-full h-full" />
+
+          return (
+            <div 
+              key={`${rIdx}-${cIdx}`} 
+              style={{ backgroundColor: bgColor }}
+              className="w-full h-full"
+            />
+          )
         })
       )}
     </div>
@@ -145,34 +162,42 @@ function generateChaosStandardLottoRows(round: number, count: number): LootRowDa
   const config = THEME_MAP[themeKey]
   const results: LootRowData[] = []
   
-  // 기준 난수 시드 생성
   let baseSeed = Date.now() + Math.floor(Math.random() * 50000)
-  let r_param = 3.85 + (baseSeed % 100) * 0.001 // 카오스 분기 매개변수 제어
+  let r_param = 3.86 + (baseSeed % 80) * 0.001 
 
   while (results.length < count) {
     const mainNumbers: number[] = []
     let x = (baseSeed % 79) * 0.0123
     if (x === 0 || x === 1) x = 0.456
 
-    // 로지스틱 비선형 위상 맵 루프 실행
-    while (mainNumbers.length < 6) {
+    let safetyCounter = 0 // [수술 반영]: 무한 루프 크래시 방지용 하드웨어 브레이크 카운터
+
+    while (mainNumbers.length < 6 && safetyCounter < 100) {
+      safetyCounter++
       x = r_param * x * (1 - x)
       const cand = Math.floor(x * 45) + 1
       if (!mainNumbers.includes(cand) && cand >= 1 && cand <= 45) {
         mainNumbers.push(cand)
       }
     }
-    mainNumbers.sort((a, b) => a - b)
 
-    // 표준편차 필터링 알고리즘 ($\sigma$ 격리 검증)
-    const sum = mainNumbers.reduce((acc, curr) => acc + curr, 0)
-    // 6개 번호 조합의 수학적 표준 평균대역(115 ~ 161) 검증 필터
-    if (sum < 112 || sum > 164) {
-      baseSeed += 13 // 필터 탈락 시 위상 천이 후 재결합
+    // 예외적인 주기 오르빗에 갇혔을 경우 시드 강제 이탈 시켜 크래시 원천 차단
+    if (safetyCounter >= 100) {
+      baseSeed += 31
+      r_param = 3.86 + (baseSeed % 80) * 0.001
       continue
     }
 
-    // 2등 저격 유도형 독립 보석 보너스 번호 분산 추출
+    mainNumbers.sort((a, b) => a - b)
+
+    // 표준편차 기반 총합 유효 대역 검증 필터 ($\sigma$)
+    const sum = mainNumbers.reduce((acc, curr) => acc + curr, 0)
+    if (sum < 105 || sum > 175) {
+      baseSeed += 17 
+      continue
+    }
+
+    // 2등 저격 연동형 독립 보너스 볼 위상 제어
     let bonusNumber = Math.floor((Math.abs(Math.sin(x + sum)) * 100000) % 45) + 1
     while (mainNumbers.includes(bonusNumber)) {
       bonusNumber = (bonusNumber % 45) + 1
@@ -189,11 +214,13 @@ function generateChaosStandardLottoRows(round: number, count: number): LootRowDa
 }
 
 // ==========================================
-// 4. 웹 오디오 API 신디사이저
+// 4. 웹 오디오 API 신디사이저 (런타임 보안 필터 완치형)
 // ==========================================
 class BuiltInRetroAudio {
   private ctx: AudioContext | null = null
-  private init() {
+
+  // [수술 반영]: 사측 필터 우회 및 터치 순간 동기화를 위한 지연 초기화 프로토콜
+  initOnDemand() {
     if (!this.ctx) {
       this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
     }
@@ -201,10 +228,12 @@ class BuiltInRetroAudio {
       this.ctx.resume()
     }
   }
+
   playClang() {
-    this.init()
+    this.initOnDemand()
     if (!this.ctx) return
     const now = this.ctx.currentTime
+    
     const osc = this.ctx.createOscillator()
     const gain = this.ctx.createGain()
     osc.type = "triangle"
@@ -217,10 +246,12 @@ class BuiltInRetroAudio {
     osc.start(now)
     osc.stop(now + 0.12)
   }
+
   playShatter() {
-    this.init()
+    this.initOnDemand()
     if (!this.ctx) return
     const now = this.ctx.currentTime
+
     const melody = [523.25, 659.25, 783.99, 1046.50, 1318.51]
     melody.forEach((freq, idx) => {
       const osc = this.ctx.createOscillator()
@@ -239,7 +270,7 @@ class BuiltInRetroAudio {
 }
 
 // ==========================================
-// 5. 초기 UI 규격 복원형 컴포넌트
+// 5. 초기 버전 UI 규격 복원형 컴포넌트
 // ==========================================
 function EmbeddedPixelBall({ value, variant, config }: { value: number; variant: "main" | "bonus"; config: ThemeConfig }) {
   const pad = String(value).padStart(2, "0")
@@ -275,8 +306,17 @@ function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: numb
 }
 
 // ==========================================
-// 6. 메인 코어 뷰어 및 자동 시간 동기화 바디
+// 6. [오리지널 뼈대 복원] 메인 뷰어 무대
 // ==========================================
+const SPECK_POS = [
+  { top: "10%", left: "14%" },
+  { top: "18%", left: "82%" },
+  { top: "44%", left: "8%" },
+  { top: "30%", left: "78%" },
+  { top: "58%", left: "90%" },
+  { top: "8%", left: "52%" },
+]
+
 export default function Page() {
   const [round, setRound] = useState(1227)
   const [phase, setPhase] = useState<Phase>("idle")
@@ -288,23 +328,20 @@ export default function Page() {
   const timers = useRef<number[]>([])
   const audioRef = useRef<BuiltInRetroAudio | null>(null)
 
-  // [기획 명세]: 매주 자동으로 실시간 회차 동기화 연산 드라이버
+  const clearTimers = useCallback(() => {
+    timers.current.forEach((t) => window.clearTimeout(t))
+    timers.current = []
+  }, [])
+
+  // 2026년 실시간 회차 매주 자동 추적 계산엔진
   useEffect(() => {
-    // 로또 최초 기준일 (1회차 추첨일: 2002년 12월 7일) 기반 타임 갭 추적 계산
     const baseDate = new Date("2002-12-07T21:00:00")
     const today = new Date()
     const diffMs = today.getTime() - baseDate.getTime()
     const diffWeeks = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7))
     const calculatedRound = 1 + diffWeeks
     setRound(calculatedRound)
-  }, [])
-
-  const clearTimers = useCallback(() => {
-    timers.current.forEach((t) => window.clearTimeout(t))
-    timers.current = []
-  }, [])
-
-  useEffect(() => {
+    
     audioRef.current = new BuiltInRetroAudio()
     return () => clearTimers()
   }, [clearTimers])
