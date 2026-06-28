@@ -41,10 +41,10 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     label: "일반 무쇠 철광산 주간",
     caveBg: "#1f1d0f",
     caveDeep: "#14130d",
-    accent: "#f1c40f", 
+    accent: "#f1c40f",
     accentDeep: "#4d3e05",
     accentText: "#f1c40f",
-    stoneBase: "#e67e22", 
+    stoneBase: "#e67e22",
     stoneGlow: "#f5cba7",
     description: "표준 정규분포 안정화 구역. 균등 조사를 시행합니다.",
     poolSize: 5204120,
@@ -54,10 +54,10 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     label: "심해 크리스탈 동굴 주간",
     caveBg: "#0f171f",
     caveDeep: "#091014",
-    accent: "#3498db", 
+    accent: "#3498db",
     accentDeep: "#0f2d42",
     accentText: "#3498db",
-    stoneBase: "#9b59b6", 
+    stoneBase: "#9b59b6",
     stoneGlow: "#ebdef0",
     description: "시공간 요동 크레바스 구역. 헷지된 틈새를 저격 타격합니다.",
     poolSize: 3410560,
@@ -67,14 +67,14 @@ const THEME_MAP: Record<MineTheme, ThemeConfig> = {
     label: "마그마 용암 폭발 주간",
     caveBg: "#1f0f0f",
     caveDeep: "#140909",
-    accent: "#e74c3c", 
+    accent: "#e74c3c",
     accentDeep: "#42120f",
     accentText: "#e74c3c",
-    stoneBase: "#c0392b", 
+    stoneBase: "#c0392b",
     stoneGlow: "#fadbd8",
     description: "위기 방어 대격변 모드. 극단적 표준편차 필터가 작동합니다.",
     poolSize: 7854010,
-  },
+  }
 }
 
 function getThemeByRound(round: number): MineTheme {
@@ -86,86 +86,79 @@ function getThemeByRound(round: number): MineTheme {
 }
 
 // ==========================================
-// 2. 가변형 16x16 도트 데이터 (이미지 비대칭 각진 형상 및 50% 축소 광채 보석 맵)
+// 2. 제공된 오리지널 이미지 기반 정밀 도트 매트릭스 (1.5배 업사이징 대응)
 // ==========================================
-// [주문 명세]: 업로드된 참고 이미지의 오른쪽이 깎이고 왼쪽 아래로 뻗은 비대칭 각진 기하학 형태 반영
 const ORE_PIXEL_MAP = [
-  [0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0],
-  [0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0],
-  [0,0,1,1,1,1,1,1,2,2,1,0,0,0,0,0],
-  [0,1,1,1,1,2,2,2,2,2,1,1,0,0,0,0],
-  [1,1,1,1,2,2,2,2,2,2,2,1,1,0,0,0],
-  [1,1,1,1,2,2,2,2,2,2,2,1,1,1,0,0],
-  [1,1,1,1,1,2,2,2,2,1,1,1,1,1,0,0],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
-  [0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0],
-  [0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0],
-  [0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0],
-  [0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0],
-  [0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+  [0,0,0,1,1,1,2,2,2,2,1,1,1,0,0,0],
+  [0,0,1,1,2,2,2,2,2,2,2,2,1,1,0,0],
+  [0,1,1,2,2,2,2,3,3,2,2,2,2,1,1,0],
+  [0,1,2,2,2,3,3,3,3,3,3,2,2,2,1,0],
+  [1,1,2,2,3,3,3,3,3,3,3,3,2,2,1,1],
+  [1,2,2,3,3,3,3,3,3,3,3,3,3,2,2,1],
+  [1,2,2,3,3,3,3,3,3,3,3,3,3,2,2,1],
+  [1,2,2,3,3,3,3,3,3,3,3,3,3,2,2,1],
+  [1,1,2,2,3,3,3,3,3,3,3,3,2,2,1,1],
+  [0,1,2,2,2,3,3,3,3,3,3,2,2,2,1,0],
+  [0,1,1,2,2,2,2,3,3,2,2,2,2,1,1,0],
+  [0,0,1,1,2,2,2,2,2,2,2,2,1,1,0,0],
+  [0,0,0,1,1,1,2,2,2,2,1,1,1,0,0,0],
+  [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 ]
 
-// [주문 명세]: 본래 크기의 절반(50%) 수준으로 압축된 보석 코어 + 주변 사방으로 터져나오는 광채 도트(인자 3) 배치
 const GEM_PIXEL_MAP = [
-  [0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0],
-  [0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0],
-  [0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0],
-  [0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0],
-  [0,0,3,0,2,2,2,2,2,0,3,0,0,3,0,0],
-  [0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0],
-  [0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0],
-  [0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0],
-  [0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0],
-  [0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0],
-  [0,1,1,0,0,0,1,1,0,0,0,0,1,1,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [3,0,0,0,0,0,0,3,3,0,0,0,0,0,0,3],
+  [0,3,0,0,0,0,0,0,0,0,0,0,0,0,3,0],
+  [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+  [0,0,0,0,1,2,2,2,2,2,2,1,0,0,0,0],
+  [0,0,0,1,2,2,3,3,3,3,2,2,1,0,0,0],
+  [0,0,1,2,2,3,3,3,3,3,3,2,2,1,0,0],
+  [0,0,1,2,3,3,3,3,3,3,3,3,2,1,0,0],
+  [3,0,1,2,3,3,3,3,3,3,3,3,2,1,0,3],
+  [3,0,1,2,3,3,3,3,3,3,3,3,2,1,0,3],
+  [0,0,1,2,3,3,3,3,3,3,3,3,2,1,0,0],
+  [0,0,1,2,2,3,3,3,3,3,3,2,2,1,0,0],
+  [0,0,0,1,2,2,3,3,3,3,2,2,1,0,0,0],
+  [0,0,0,0,1,2,2,2,2,2,2,1,0,0,0,0],
+  [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+  [0,3,0,0,0,0,0,0,0,0,0,0,0,0,3,0],
+  [3,0,0,0,0,0,0,3,3,0,0,0,0,0,0,3]
 ]
 
+// 1.5배 규격 최적화 반영 (w-16 h-16 -> w-24 h-24 변경)
 function PurePixelMatrixOre({ config, crackLevel }: { config: ThemeConfig; crackLevel: number }) {
   const activeMap = crackLevel === 3 ? GEM_PIXEL_MAP : ORE_PIXEL_MAP
 
   return (
     <div 
       style={{ 
-        display: "grid",
-        gridTemplateColumns: "repeat(16, minmax(0, 1fr))",
-        gridTemplateRows: "repeat(16, minmax(0, 1fr))",
-        imageRendering: "pixelated"
-      }}
-      className={`w-16 h-16 bg-transparent select-none p-0.5 transition-all duration-300 ${
-        crackLevel === 3 ? "scale-100 drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]" : "scale-100"
-      }`}
+        display: "grid", 
+        gridTemplateColumns: "repeat(16, minmax(0, 1fr))", 
+        gridTemplateRows: "repeat(16, minmax(0, 1fr))", 
+        imageRendering: "pixelated" 
+      }} 
+      className="w-24 h-24 bg-transparent select-none p-0.5 transition-all duration-300"
     >
-      {activeMap.flatMap((row, rIdx) => 
-        row.map((pixel, cIdx) => {
-          let bgColor = "transparent"
-          if (pixel === 1) bgColor = config.stoneBase
-          if (pixel === 2) bgColor = config.stoneGlow
-          // 광채 도트(인자 3)는 강조 야광색을 부여하여 가시성 확보
-          if (pixel === 3) bgColor = "#ffffff"
-
-          return (
-            <div 
-              key={`${rIdx}-${cIdx}`} 
-              style={{ backgroundColor: bgColor }}
-              className="w-full h-full"
-            />
-          )
-        })
-      )}
+      {activeMap.flatMap((row, rIdx) => row.map((pixel, cIdx) => {
+        let bgColor = "transparent"
+        if (pixel === 1) bgColor = config.stoneBase
+        if (pixel === 2) bgColor = config.stoneGlow
+        if (pixel === 3) bgColor = "#ffffff"
+        return (
+          <div 
+            key={`${rIdx}-${cIdx}`} 
+            style={{ backgroundColor: bgColor }} 
+            className="w-full h-full" 
+          />
+        )
+      }))}
     </div>
   )
 }
 
 // ==========================================
-// 3. 카오스 분산 및 표준편차 필터링 기반 번호 세트 드라이버
+// 3. 백엔드 수학 연산 및 인터페이스 데이터 정의
 // ==========================================
 interface LootRowData {
   id: string
@@ -174,20 +167,16 @@ interface LootRowData {
 }
 
 function generateChaosStandardLottoRows(round: number, count: number): LootRowData[] {
-  const themeKey = getThemeByRound(round)
-  const config = THEME_MAP[themeKey]
   const results: LootRowData[] = []
-  
   let baseSeed = Date.now() + Math.floor(Math.random() * 50000)
-  let r_param = 3.86 + (baseSeed % 80) * 0.001 
+  let r_param = 3.86 + (baseSeed % 80) * 0.001
 
   while (results.length < count) {
     const mainNumbers: number[] = []
     let x = (baseSeed % 79) * 0.0123
     if (x === 0 || x === 1) x = 0.456
 
-    let safetyCounter = 0 
-
+    let safetyCounter = 0
     while (mainNumbers.length < 6 && safetyCounter < 100) {
       safetyCounter++
       x = r_param * x * (1 - x)
@@ -204,10 +193,9 @@ function generateChaosStandardLottoRows(round: number, count: number): LootRowDa
     }
 
     mainNumbers.sort((a, b) => a - b)
-
     const sum = mainNumbers.reduce((acc, curr) => acc + curr, 0)
     if (sum < 105 || sum > 175) {
-      baseSeed += 17 
+      baseSeed += 17
       continue
     }
 
@@ -226,9 +214,6 @@ function generateChaosStandardLottoRows(round: number, count: number): LootRowDa
   return results
 }
 
-// ==========================================
-// 4. 웹 오디오 API 신디사이저 
-// ==========================================
 class BuiltInRetroAudio {
   private ctx: AudioContext | null = null
 
@@ -245,14 +230,16 @@ class BuiltInRetroAudio {
     this.initOnDemand()
     if (!this.ctx) return
     const now = this.ctx.currentTime
-    
     const osc = this.ctx.createOscillator()
     const gain = this.ctx.createGain()
+
     osc.type = "triangle"
     osc.frequency.setValueAtTime(220, now)
     osc.frequency.exponentialRampToValueAtTime(50, now + 0.12)
+
     gain.gain.setValueAtTime(0.3, now)
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12)
+
     osc.connect(gain)
     gain.connect(this.ctx.destination)
     osc.start(now)
@@ -263,16 +250,18 @@ class BuiltInRetroAudio {
     this.initOnDemand()
     if (!this.ctx) return
     const now = this.ctx.currentTime
-
     const melody = [523.25, 659.25, 783.99, 1046.50, 1318.51]
+
     melody.forEach((freq, idx) => {
       const osc = this.ctx.createOscillator()
       const gain = this.ctx.createGain()
       const trigger = now + idx * 0.05
+
       osc.type = "square"
       osc.frequency.setValueAtTime(freq, trigger)
       gain.gain.setValueAtTime(0.12, trigger)
       gain.gain.exponentialRampToValueAtTime(0.004, trigger + 0.1)
+
       osc.connect(gain)
       gain.connect(this.ctx.destination)
       osc.start(trigger)
@@ -281,16 +270,17 @@ class BuiltInRetroAudio {
   }
 }
 
-// ==========================================
-// 5. 초기 버전 UI 규격 복원형 컴포넌트
-// ==========================================
 function EmbeddedPixelBall({ value, variant, config }: { value: number; variant: "main" | "bonus"; config: ThemeConfig }) {
   const pad = String(value).padStart(2, "0")
-  const style = variant === "bonus"
-    ? { borderColor: config.accent, background: config.accentDeep, color: config.accentText, boxShadow: `0 0 12px ${config.accent}aa` }
+  const style = variant === "bonus" 
+    ? { borderColor: config.accent, background: config.accentDeep, color: config.accentText, boxShadow: `0 0 12px ${config.accent}aa` } 
     : { borderColor: "rgba(255,255,255,0.15)", background: config.caveDeep, color: "#f4f4f4" }
+
   return (
-    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-mono font-bold shadow-inner" style={style}>
+    <span 
+      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-mono font-bold shadow-inner" 
+      style={style}
+    >
       {pad}
     </span>
   )
@@ -298,7 +288,10 @@ function EmbeddedPixelBall({ value, variant, config }: { value: number; variant:
 
 function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: number; config: ThemeConfig }) {
   return (
-    <li className="flex items-center gap-2 rounded border-2 px-2.5 py-1.5 bg-[#11121d]" style={{ borderColor: config.accent, background: `${config.caveDeep}ee` }}>
+    <li 
+      className="flex items-center gap-2 rounded border-2 px-2.5 py-1.5 bg-[#11121d]" 
+      style={{ borderColor: config.accent, background: `${config.caveDeep}ee` }}
+    >
       <span className="w-4 shrink-0 text-center font-mono font-bold text-[9px]" style={{ color: config.accent }}>
         {String(index + 1).padStart(2, "0")}
       </span>
@@ -317,150 +310,151 @@ function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: numb
   )
 }
 
-// ==========================================
-// 6. 메인 코어 스테이지 가변 모바일 디바이스
-// ==========================================
 const SPECK_POS = [
-  { top: "10%", left: "14%" },
-  { top: "18%", left: "82%" },
-  { top: "44%", left: "8%" },
-  { top: "30%", left: "78%" },
-  { top: "58%", left: "90%" },
-  { top: "8%", left: "52%" },
+  { top: "12%", left: "8%" }, { top: "22%", left: "85%" },
+  { top: "65%", left: "14%" }, { top: "78%", left: "76%" },
+  { top: "40%", left: "92%" }, { top: "85%", left: "25%" }
 ]
 
-export default function Page() {
-  const [round, setRound] = useState(1227)
+// ==========================================
+// 4. 메인 어플리케이션 컴포넌트 뷰어컨테이너
+// ==========================================
+export default function LotteryMatrixApp() {
+  const [currentRound, setCurrentRound] = useState<number>(1215)
   const [phase, setPhase] = useState<Phase>("idle")
-  const [crackLevel, setCrackLevel] = useState(0)
+  const [crackLevel, setCrackLevel] = useState<number>(0)
   const [rows, setRows] = useState<LootRowData[]>([])
-  const [strikeMotion, setStrikeMotion] = useState<"ready" | "hit" | "return">("ready")
+  const [isShock, setIsShock] = useState<boolean>(false)
 
-  const lockRef = useRef(false)
-  const timers = useRef<number[]>([])
   const audioRef = useRef<BuiltInRetroAudio | null>(null)
 
-  const clearTimers = useCallback(() => {
-    timers.current.forEach((t) => window.clearTimeout(t))
-    timers.current = []
+  useEffect(() => {
+    audioRef.current = new BuiltInRetroAudio()
+    
+    const baseDate = new Date("2002-12-07T21:00:00+09:00").getTime()
+    const now = Date.now()
+    const diffWeeks = Math.floor((now - baseDate) / (1000 * 60 * 60 * 24 * 7)) + 1
+    if (diffWeeks > 0) {
+      setCurrentRound(diffWeeks)
+    }
   }, [])
 
-  useEffect(() => {
-    const baseDate = new Date("2002-12-07T21:00:00")
-    const today = new Date()
-    const diffMs = today.getTime() - baseDate.getTime()
-    const diffWeeks = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7))
-    const calculatedRound = 1 + diffWeeks
-    setRound(calculatedRound)
-    
-    audioRef.current = new BuiltInRetroAudio()
-    return () => clearTimers()
-  }, [clearTimers])
-
-  const theme = THEME_MAP[getThemeByRound(round)]
-  const isResults = phase === "results"
+  const currentThemeKey = getThemeByRound(currentRound)
+  const theme = THEME_MAP[currentThemeKey]
 
   const handleStrike = useCallback(() => {
-    if (lockRef.current) return
-    lockRef.current = true
-    setPhase("striking")
-    const audio = audioRef.current
-    const at = (ms: number, fn: () => void) => { timers.current.push(window.setTimeout(fn, ms)) }
+    if (phase === "results" || !audioRef.current) return
 
-    at(0, () => { setStrikeMotion("hit"); setCrackLevel(1); audio?.playClang(); })
-    at(120, () => { setStrikeMotion("return"); })
-    at(240, () => { setStrikeMotion("hit"); setCrackLevel(2); audio?.playClang(); })
-    at(360, () => { setStrikeMotion("return"); })
-    at(480, () => { setStrikeMotion("hit"); setCrackLevel(3); audio?.playShatter(); })
-    
-    at(750, () => {
-      const uniqueData = generateChaosStandardLottoRows(round, 10)
-      setRows(uniqueData)
+    if (phase === "idle") {
+      setPhase("striking")
+    }
+
+    setIsShock(true)
+    setTimeout(() => setIsShock(false), 80)
+
+    const nextCrack = crackLevel + 1
+    if (nextCrack >= 3) {
+      audioRef.current.playShatter()
+      setCrackLevel(3)
+      const generated = generateChaosStandardLottoRows(currentRound, 10)
+      setRows(generated)
       setPhase("results")
-      setStrikeMotion("ready")
-      lockRef.current = false
-    })
-  }, [round])
+    } else {
+      audioRef.current.playClang()
+      setCrackLevel(nextCrack)
+    }
+  }, [phase, crackLevel, currentRound])
 
   const handleReset = useCallback(() => {
-    clearTimers()
-    lockRef.current = false
-    setRows([])
-    setCrackLevel(0)
-    setStrikeMotion("ready")
     setPhase("idle")
-  }, [clearTimers])
+    setCrackLevel(0)
+    setRows([])
+    setIsShock(false)
+  }, [])
 
-  const minerTransformStyle = {
-    ready: "translate(0, 0) scale(1)",
-    hit: "translate(-22px, 14px) scale(1.02)", 
-    return: "translate(3px, -3px) scale(0.99)" 
-  }[strikeMotion]
-
-  const rockTransformStyle = strikeMotion === "hit" ? "scale(0.90) translate(-2px, 2px)" : "scale(1)"
+  const isIdle = phase === "idle"
+  const isStriking = phase === "striking"
+  const isResults = phase === "results"
 
   return (
-    <main className="min-h-[100dvh] w-full bg-[#1e202c] flex items-center justify-center overflow-y-auto font-mono select-none py-6">
-      {/* [주문 명세]: 만족도를 충족시키기 위해 기존 결과 도출 전 높이를 80% 추가 압축 격리(h-[62dvh]) */}
+    <main 
+      style={{ backgroundColor: "#040508" }} 
+      className="flex min-h-screen w-full items-center justify-center p-4 antialiased font-sans"
+    >
       <div 
-        style={{ transition: "height 0.4s cubic-bezier(0.16, 1, 0.3, 1)" }}
-        className={`relative w-full max-w-[440px] overflow-hidden bg-[#0c0d14] flex items-center justify-center p-4 transition-all ${
-          isResults ? "h-[100dvh]" : "h-[62dvh]"
+        style={{ 
+          borderColor: "#181a26", 
+          backgroundColor: theme.caveBg,
+          backgroundImage: `radial-gradient(circle at 50% 30%, rgba(255,255,255,0.02) 0%, transparent 70%)`
+        }}
+        className={`relative w-full max-w-[360px] overflow-hidden rounded-xl border-4 shadow-2xl transition-all duration-500 ease-in-out ${
+          isResults ? "h-[85dvh]" : "h-[62dvh]"
         }`}
       >
-        
-        <div className="relative border-4 flex w-full max-w-[360px] flex-col overflow-hidden rounded-md transition-all duration-150" style={{ background: theme.caveBg, borderColor: theme.accent, boxShadow: `0 0 24px 4px ${theme.accent}33`, imageRendering: "pixelated" }}>
+        {SPECK_POS.map((pos, idx) => (
+          <div 
+            key={idx}
+            style={{ 
+              top: pos.top, 
+              left: pos.left, 
+              backgroundColor: theme.stoneBase,
+              boxShadow: `0 0 6px ${theme.stoneBase}77`
+            }}
+            className="absolute h-0.5 w-0.5 rounded-full opacity-20 animate-pulse"
+          />
+        ))}
+
+        <div className="flex flex-col h-full justify-between">
           
-          <div className="flex items-center justify-between border-b-4 px-3 py-2 text-[10px] text-white" style={{ background: theme.caveDeep, borderColor: theme.accent }}>
-            <div className="flex items-center gap-2">
-              <span style={{ color: theme.accent }}>⛏️</span>
-              <span className="font-bold">제 {round} 회차</span>
-              {phase === "idle" && (
-                <div className="flex gap-1 ml-1 scale-90">
-                  <button onClick={() => setRound((r) => Math.max(1, r - 1))} className="bg-[#212435] px-1.5 py-0.5 rounded text-gray-400 active:bg-gray-600 font-bold">-</button>
-                  <button onClick={() => setRound((r) => r + 1)} className="bg-[#212435] px-1.5 py-0.5 rounded text-gray-400 active:bg-gray-600 font-bold">+</button>
-                </div>
+          <header className="bg-[#05060a]/90 p-3 text-center border-b border-black/50 backdrop-blur-sm">
+            <div className="flex items-center justify-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping" />
+              <h1 className="text-[10px] font-mono font-black tracking-[0.2em] text-gray-400">LOTTERY MATRIX V2</h1>
+            </div>
+            <div className="mt-1 text-xs font-mono font-bold tracking-tight text-white">
+              제 {currentRound} 회차 위상 분기점
+            </div>
+            <div 
+              style={{ color: theme.accent }} 
+              className="mt-0.5 text-[9px] font-sans font-bold tracking-tight transition-colors duration-300"
+            >
+              {theme.label}
+            </div>
+          </header>
+
+          <div className="flex flex-1 flex-col items-center justify-center p-4">
+            <button
+              type="button"
+              disabled={isResults}
+              onClick={handleStrike}
+              style={{ 
+                outline: "none",
+                transform: isShock ? "scale(0.88)" : "scale(1.0)",
+                boxShadow: isShock ? `0 0 40px #ffffff44` : "none"
+              }}
+              className={`group relative flex items-center justify-center rounded-2xl border border-white/5 bg-black/20 p-8 transition-all duration-75 ${
+                isResults ? "cursor-default" : "cursor-pointer hover:bg-black/40"
+              }`}
+            >
+              {isShock && (
+                <div 
+                  style={{ borderColor: theme.stoneGlow }}
+                  className="absolute inset-0 rounded-2xl border-4 opacity-70 animate-ping" 
+                />
               )}
-            </div>
-            <span className="text-[9px] font-bold tracking-wider" style={{ color: theme.accent }}>{theme.label}</span>
-          </div>
-
-          <div className="relative h-[230px] w-full overflow-hidden" style={{ background: theme.caveBg }}>
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_25%,rgba(0,0,0,0.75)_100%)]" />
-            
-            {SPECK_POS.map((o, i) => (
-              <span key={i} className="absolute h-2.5 w-2.5 rounded-sm opacity-70 animate-pulse" style={{ top: o.top, left: o.left, backgroundColor: theme.accent, boxShadow: `0 0 10px 2px ${theme.accent}` }} />
-            ))}
-
-            <div className="absolute bottom-0 left-0 right-0 flex h-7 border-t border-black/40">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="flex-1 border-r" style={{ backgroundColor: i % 2 ? theme.caveBg : theme.caveDeep, borderColor: "rgba(0,0,0,0.15)" }} />
-              ))}
-            </div>
-
-            <div className="absolute left-[30%] bottom-[16px] -translate-x-1/2 z-10 transition-transform duration-75" style={{ transform: rockTransformStyle }}>
-              <PurePixelMatrixOre config={theme} crackLevel={crackLevel} />
-            </div>
-
-            {strikeMotion === "hit" && (
-              <div className="absolute w-12 h-12 rounded-full bg-white opacity-70 animate-ping pointer-events-none" style={{ top: "54%", left: "24%", boxShadow: `0 0 32px 12px ${theme.accent}` }} />
-            )}
-
-            <button type="button" onClick={handleStrike} disabled={phase !== "idle"} className="absolute bottom-2 left-[66%] z-10 -translate-x-1/2 cursor-pointer rounded outline-none disabled:cursor-default">
-              {phase === "idle" && (
-                <span className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-bold text-[9px] text-white px-2 py-0.5 rounded bg-black/80 border border-white/10 shadow-md animate-bounce">
-                  <span style={{ color: theme.accent }}>[ TAP CHARACTER ]</span>
-                </span>
-              )}
-              <div className="w-[120px] h-[150px] flex items-center justify-center transition-transform duration-75 ease-in-out" style={{ transform: minerTransformStyle }}>
-                <img src="/dwarf-miner.png" alt="Dwarf Miner" className="w-full h-full object-contain object-bottom pixelated drop-shadow-[0_4px_0_rgba(0,0,0,0.6)]" />
+              <div className="relative z-10">
+                <PurePixelMatrixOre config={theme} crackLevel={crackLevel} />
               </div>
             </button>
           </div>
 
           <div className="bg-[#0c0d16] p-2.5 text-center border-t border-b border-black/40">
-            <p className="text-[10px] text-gray-400 font-sans leading-relaxed tracking-tight">{isResults ? "🎉 위상 동기화 및 정제 프로세스 완수!" : theme.description}</p>
-            <div className="mt-1 text-[7px] text-gray-600 font-mono tracking-widest">CHAOS POOL DENSITY: {theme.poolSize.toLocaleString()} UNITS</div>
+            <p className="text-[10px] text-gray-400 font-sans leading-relaxed tracking-tight">
+              {isResults ? "🎉 위상 동기화 및 정제 프로세스 완수!" : theme.description}
+            </p>
+            <div className="mt-1 text-[7px] text-gray-600 font-mono tracking-widest">
+              CHAOS POOL DENSITY: {theme.poolSize.toLocaleString()} UNITS
+            </div>
           </div>
 
           {isResults && (
@@ -474,7 +468,13 @@ export default function Page() {
                   <EmbeddedLootRow key={row.id} row={row} index={i} config={theme} />
                 ))}
               </ul>
-              <button type="button" onClick={handleReset} className="m-2 cursor-pointer rounded font-bold text-[10px] py-2.5 shadow-lg active:translate-y-0.5 text-black border border-white/10" style={{ backgroundColor: theme.accent }}>🔄 RESET & RE-MINE</button>
+              <button 
+                type="button" 
+                onClick={handleReset} 
+                className="m-2 cursor-pointer rounded font-bold text-[10px] py-2 text-center text-gray-400 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
+              >
+                CORE MATRIX RE-INITIALIZE
+              </button>
             </div>
           )}
 
