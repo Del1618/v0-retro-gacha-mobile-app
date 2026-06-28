@@ -109,16 +109,16 @@ const ORE_PIXEL_MAP = [
 
 function PurePixelMatrixOre({ config, crackLevel }: { config: ThemeConfig; crackLevel: number }) {
   if (crackLevel === 3) {
+    // [수술 반영]: 무한 점멸을 일으키던 animate-ping을 영구 제거하고, 단정한 인게임 안내 문구로 고정
     return (
-      <div className="w-16 h-16 flex items-center justify-center animate-ping pointer-events-none">
-        <span className="text-[10px] font-black tracking-widest text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
-          PULVERIZED
+      <div className="w-16 h-16 flex items-center justify-center pointer-events-none transition-all duration-300 scale-100 opacity-90">
+        <span className="text-[9px] font-mono font-black tracking-widest text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] uppercase">
+          SUCCESS
         </span>
       </div>
     )
   }
 
-  // [수술 반영]: 외부 Tailwind 환경 설정 파일 우회용 가로/세로 인라인 인젝션 명세
   return (
     <div 
       style={{ 
@@ -170,7 +170,7 @@ function generateChaosStandardLottoRows(round: number, count: number): LootRowDa
     let x = (baseSeed % 79) * 0.0123
     if (x === 0 || x === 1) x = 0.456
 
-    let safetyCounter = 0 // [수술 반영]: 무한 루프 크래시 방지용 하드웨어 브레이크 카운터
+    let safetyCounter = 0 
 
     while (mainNumbers.length < 6 && safetyCounter < 100) {
       safetyCounter++
@@ -181,7 +181,6 @@ function generateChaosStandardLottoRows(round: number, count: number): LootRowDa
       }
     }
 
-    // 예외적인 주기 오르빗에 갇혔을 경우 시드 강제 이탈 시켜 크래시 원천 차단
     if (safetyCounter >= 100) {
       baseSeed += 31
       r_param = 3.86 + (baseSeed % 80) * 0.001
@@ -190,14 +189,13 @@ function generateChaosStandardLottoRows(round: number, count: number): LootRowDa
 
     mainNumbers.sort((a, b) => a - b)
 
-    // 표준편차 기반 총합 유효 대역 검증 필터 ($\sigma$)
+    // 표준편차 검증 필터
     const sum = mainNumbers.reduce((acc, curr) => acc + curr, 0)
     if (sum < 105 || sum > 175) {
       baseSeed += 17 
       continue
     }
 
-    // 2등 저격 연동형 독립 보너스 볼 위상 제어
     let bonusNumber = Math.floor((Math.abs(Math.sin(x + sum)) * 100000) % 45) + 1
     while (mainNumbers.includes(bonusNumber)) {
       bonusNumber = (bonusNumber % 45) + 1
@@ -214,12 +212,11 @@ function generateChaosStandardLottoRows(round: number, count: number): LootRowDa
 }
 
 // ==========================================
-// 4. 웹 오디오 API 신디사이저 (런타임 보안 필터 완치형)
+// 4. 웹 오디오 API 신디사이저 
 // ==========================================
 class BuiltInRetroAudio {
   private ctx: AudioContext | null = null
 
-  // [수술 반영]: 사측 필터 우회 및 터치 순간 동기화를 위한 지연 초기화 프로토콜
   initOnDemand() {
     if (!this.ctx) {
       this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
@@ -306,7 +303,7 @@ function EmbeddedLootRow({ row, index, config }: { row: LootRowData; index: numb
 }
 
 // ==========================================
-// 6. [오리지널 뼈대 복원] 메인 뷰어 무대
+// 6. 메인 코어 스테이지 디바이스
 // ==========================================
 const SPECK_POS = [
   { top: "10%", left: "14%" },
@@ -333,8 +330,8 @@ export default function Page() {
     timers.current = []
   }, [])
 
-  // 2026년 실시간 회차 매주 자동 추적 계산엔진
   useEffect(() => {
+    // 로또 최초 기준일 기반 자동 동기화 캘린더 엔진 가동
     const baseDate = new Date("2002-12-07T21:00:00")
     const today = new Date()
     const diffMs = today.getTime() - baseDate.getTime()
